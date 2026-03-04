@@ -1,0 +1,53 @@
+Discovering workflow directives 362ms
+Created steps bundle 20ms
+Created intermediate workflow bundle 3ms
+Creating webhook route
+Creating manifest...
+Created manifest with 3 steps, 0 workflows, and 0 classes 1ms
+ΓÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\UseR\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\package-lock.json
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 3.9s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/18) ...
+  Generating static pages using 11 workers (4/18) 
+  Generating static pages using 11 workers (8/18) 
+  Generating static pages using 11 workers (13/18) 
+Γ£ô Generating static pages using 11 workers (18/18) in 408.2ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ ╞Æ /.well-known/workflow/v1/flow
+Γö£ ╞Æ /.well-known/workflow/v1/step
+Γö£ ╞Æ /.well-known/workflow/v1/webhook/[token]
+Γö£ ╞Æ /api/auth/[...nextauth]
+Γö£ Γùï /dashboard
+Γö£ Γùï /dashboard/admin/documents
+Γö£ Γùï /dashboard/book-inspection
+Γö£ Γùï /dashboard/documents
+Γö£ Γùï /dashboard/invoices
+Γö£ Γùï /dashboard/messages
+Γö£ Γùï /dashboard/projects
+Γö£ Γùï /dashboard/quotes
+Γö£ Γùï /dashboard/settings
+Γö£ Γùï /forgot-password
+Γö£ Γùï /login
+Γöö Γùï /reset-password
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

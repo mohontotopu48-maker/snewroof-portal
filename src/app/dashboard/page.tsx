@@ -7,6 +7,7 @@ import {
     Calendar, CheckCircle, Clock, Loader2
 } from 'lucide-react';
 
+
 interface DashboardStats {
     activeProjects: number;
     pendingQuotes: number;

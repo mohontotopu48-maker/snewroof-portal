@@ -67,7 +67,7 @@ export default function AdminDocumentsPage() {
 
         } catch (err: unknown) {
             console.error(err);
-            setStatus({ type: 'error', msg: (err as Error).message || 'Failed to upload document.' });
+            setStatus({ type: 'error', msg: err instanceof Error ? err.message : 'Failed to upload document.' });
         } finally {
             setUploading(false);
         }

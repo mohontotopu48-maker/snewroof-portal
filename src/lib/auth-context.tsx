@@ -1,5 +1,6 @@
 'use client';
 
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { getProfile, registerUser } from '@/app/actions';
@@ -41,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!session?.user) return;
         setProfileLoading(true);
         try {
-            const data = await getProfile();
-            if (data) {
-                setProfile(data as unknown as Profile);
+            const profileData = await getProfile();
+            if (profileData) {
+                setProfile(profileData as unknown as Profile);
             }
         } catch (err) {
             console.error('Error fetching profile in AuthContext:', err);
@@ -85,11 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await signOut({ redirect: false });
     };
 
+    type SessionUser = { id?: string; role?: string; name?: string | null; email?: string | null; image?: string | null };
     const user: User | null = session?.user ? ({
-        id: (session.user as { id?: string }).id || '',
+        id: (session.user as SessionUser).id || '',
         email: session.user.email || '',
         name: profile?.fullName || session.user.name || undefined,
-        role: profile?.role || (session.user as { role?: string }).role || 'customer',
+        role: profile?.role || (session.user as SessionUser).role || 'customer',
         avatarUrl: profile?.avatarUrl || undefined
     }) : null;
 

@@ -35,8 +35,8 @@ export default function DocumentsPage() {
             try {
                 const data = await getDocuments();
                 setDocs(data as unknown as SharedDocument[]);
-            } catch (err) {
-                console.error(err);
+            } catch {
+                // ignore
             } finally {
                 setLoading(false);
             }
