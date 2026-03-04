@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import {
     LayoutDashboard, CalendarCheck, FileText, HardHat,
-    Receipt, MessageCircle, Settings, LogOut, X, Menu
+    Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,6 +14,7 @@ const navItems = [
     { href: '/dashboard/book-inspection', icon: CalendarCheck, label: 'Book Inspection' },
     { href: '/dashboard/quotes', icon: FileText, label: 'Quotes' },
     { href: '/dashboard/projects', icon: HardHat, label: 'Projects' },
+    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/invoices', icon: Receipt, label: 'Invoices' },
     { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
 ];
@@ -33,7 +34,7 @@ export function CustomerSidebar() {
         ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || 'U';
 
-    const SidebarContent = () => (
+    const sidebarContent = (
         <aside className="sidebar">
             <style>{`
         .sidebar {
@@ -127,11 +128,16 @@ export function CustomerSidebar() {
                         {label}
                     </Link>
                 ))}
-                <div className="nav-label" style={{ marginTop: 8 }}>Account</div>
                 <Link href="/dashboard/settings" className={`nav-link ${pathname === '/dashboard/settings' ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>
                     <Settings size={18} />
                     Settings
                 </Link>
+                {user?.role === 'admin' && (
+                    <Link href="/dashboard/admin/documents" className={`nav-link ${pathname === '/dashboard/admin/documents' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                        <ShieldCheck size={18} />
+                        Admin Portal
+                    </Link>
+                )}
                 <button className="nav-link" onClick={handleSignOut} style={{ cursor: 'pointer', color: '#f87171' }}>
                     <LogOut size={18} />
                     Sign Out
@@ -180,7 +186,7 @@ export function CustomerSidebar() {
                     }}
                 />
             )}
-            <SidebarContent />
+            {sidebarContent}
         </>
     );
 }

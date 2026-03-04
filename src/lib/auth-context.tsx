@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const handleSignUp = async (email: string, password: string, name: string) => {
-        const { data, error } = await insforge.auth.signUp({
+        const { error } = await insforge.auth.signUp({
             email,
             password,
             name
@@ -56,10 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const user: User | null = session?.user ? ({
-        id: (session.user as any).id,
+        id: (session.user as { id?: string }).id || '',
         email: session.user.email || '',
         name: session.user.name || undefined,
-        role: (session.user as any).role || 'customer'
+        role: (session.user as { role?: string }).role || 'customer'
     }) : null;
 
     return (

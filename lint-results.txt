@@ -1,0 +1,99 @@
+
+> snewroof-portal@0.1.0 lint
+> eslint
+
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\scripts\bulk_create_users.ts
+  22:17  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\admin\documents\page.tsx
+    4:101  warning  'X' is defined but never used                                    @typescript-eslint/no-unused-vars
+   95:23   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  245:101  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\book-inspection\page.tsx
+    8:13  warning  'user' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  132:40  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\documents\page.tsx
+    4:46  warning  'Calendar' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    4:84  warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   35:27  warning  'error' is assigned a value but never used                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   47:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  196:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\messages\page.tsx
+   4:16  warning  'User' is defined but never used           @typescript-eslint/no-unused-vars
+   4:22  warning  'MessageCircle' is defined but never used  @typescript-eslint/no-unused-vars
+   4:50  warning  'Search' is defined but never used         @typescript-eslint/no-unused-vars
+  14:13  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\page.tsx
+   5:5   warning  'LayoutDashboard' is defined but never used                      @typescript-eslint/no-unused-vars
+  16:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  16:31  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\projects\page.tsx
+   59:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  250:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\quotes\page.tsx
+  3:35  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\dashboard\settings\page.tsx
+  4:22  warning  'Bell' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\login\page.tsx
+    6:10  warning  'LogIn' is defined but never used                                @typescript-eslint/no-unused-vars
+  201:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\app\page.tsx
+  96:58  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\auth.ts
+  28:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\components\layout\CustomerSidebar.tsx
+    8:47  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  189:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\components\layout\CustomerSidebar.tsx:189:14
+  187 |                 />
+  188 |             )}
+> 189 |             <SidebarContent />
+      |              ^^^^^^^^^^^^^^ This component is created during render
+  190 |         </>
+  191 |     );
+  192 | }
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\components\layout\CustomerSidebar.tsx:37:28
+   35 |         : user?.email?.[0]?.toUpperCase() || 'U';
+   36 |
+>  37 |     const SidebarContent = () => (
+      |                            ^^^^^^^
+>  38 |         <aside className="sidebar">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  39 |             <style>{`
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 156 |         </aside>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |     );
+      | ^^^^^^ The component is created during render here
+  158 |
+  159 |     return (
+  160 |         <>  react-hooks/static-components
+
+C:\Users\UseR\.gemini\antigravity\scratch\snewroof-portal\src\lib\auth-context.tsx
+  42:17  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  59:30  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  62:32  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+Γ£û 35 problems (17 errors, 18 warnings)
+

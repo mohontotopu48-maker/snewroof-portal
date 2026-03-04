@@ -1,0 +1,6 @@
+[dotenv@17.3.1] injecting env (3) from .env.local -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+--- Auth Test ---
+Base URL: https://7fqnim7y.ap-southeast.insforge.app
+
+Attempting to Sign In with credentials...
+Sign In Successful! ID: 31348957-c761-4422-8874-7abe68d1ea61
