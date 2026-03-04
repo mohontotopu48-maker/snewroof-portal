@@ -2,17 +2,33 @@
   "name": "snewroof-portal",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sandbox:dev": "sandbox run --runtime node24 -it --publish-port 3000 npm run dev",
+    "sandbox:build": "sandbox run --runtime node24 --rm npm run build",
+    "sandbox:lint": "sandbox run --runtime node24 --rm npm run lint",
+    "sandbox:shell": "sandbox create --runtime node24 --connect",
+    "sandbox:bulk-users": "sandbox run --runtime node24 --rm npx tsx scripts/bulk_create_users.ts",
+    "sandbox:create-user": "sandbox run --runtime node24 --rm npx tsx scripts/create_user.ts",
+    "sandbox:fix-passwords": "sandbox run --runtime node24 --rm npx tsx scripts/fix_passwords.ts",
+    "sandbox:test-logins": "sandbox run --runtime node24 --rm npx tsx scripts/test_logins.ts",
+    "workflow:web": "workflow web"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
+    "@insforge/sdk": "^1.1.6-dev.0",
+    "@neondatabase/neon-js": "^0.2.0-beta.1",
+    "@neondatabase/serverless": "^1.0.2",
     "@vercel/blob": "^2.3.1",
     "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.3.1",
+    "@workflow/next": "^4.0.1-beta.59",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
@@ -23,12 +39,14 @@
     "next-auth": "^5.0.0-beta.30",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-router-dom": "^7.13.1",
     "react-signature-canvas": "^1.1.0-alpha.2",
     "recharts": "^3.7.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "workflow": "^4.1.0-beta.63"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^24.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

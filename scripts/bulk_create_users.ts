@@ -1,4 +1,4 @@
-import insforge from "./src/lib/insforge";
+import insforge from "../src/lib/insforge";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
@@ -11,6 +11,11 @@ const usersToCreate = [
 
     // Team
     { email: "marisnewroof2023@gmail.com", password: "Maria@#SNR&26", name: "Maria (Team)", role: "team" },
+
+    // Customers
+    { email: "tomvuong@gmail.com", password: "SNR2026#Roof", name: "Tom Vuong", role: "customer" },
+    { email: "brett@gmail.com", password: "SNR2026#Roof", name: "Brett", role: "customer" },
+    { email: "mohontotopu48@gmail.com", password: "SNR2026#Roof", name: "Lorraine", role: "customer" },
 ];
 
 async function bulkCreate() {

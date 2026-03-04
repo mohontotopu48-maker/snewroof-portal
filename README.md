@@ -20,6 +20,34 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Vercel Workflow (Durable Execution)
+
+This project uses [Vercel Workflow](https://vercel.com/docs/functions/workflows) (via the `workflow` package) for durable, resumable functions.
+
+- **Example Workflow:** `src/app/actions/workflow.ts`
+- **Local Dashboard:** `npm run workflow:web`
+
+To trigger a workflow, you can use the `trigger` method from `@workflow/next`.
+
+## Development with Vercel Sandbox
+
+This project is configured to work with [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). You can run the development server, build, or admin scripts in an isolated Node 24 environment using the following commands:
+
+- **Run Dev Server in Sandbox:** `npm run sandbox:dev`
+- **Build in Sandbox:** `npm run sandbox:build`
+- **Lint in Sandbox:** `npm run sandbox:lint`
+- **Open Sandbox Shell:** `npm run sandbox:shell`
+- **Run Admin Scripts:**
+  - `npm run sandbox:bulk-users`
+  - `npm run sandbox:create-user`
+  - `npm run sandbox:fix-passwords`
+  - `npm run sandbox:test-logins`
+
+Ensure you have the `sandbox` CLI installed:
+```bash
+npm install -g sandbox
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
