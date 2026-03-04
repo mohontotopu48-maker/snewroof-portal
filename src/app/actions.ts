@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { quotes, projects, invoices, inspections, messages, documentShares, documents, profiles } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or } from 'drizzle-orm';
 import { auth } from '@/auth';
 
 export async function getQuotes() {
@@ -92,7 +92,6 @@ export async function getMessages() {
     if (!session?.user?.id) throw new Error('Unauthorized');
 
     // Fetch conversation where user is either sender or receiver
-    const { or } = require('drizzle-orm');
     const data = await db.select().from(messages)
         .where(
             or(
@@ -203,7 +202,7 @@ export async function getProfile() {
     return data[0] || null;
 }
 
-export async function updateProfile(updateData: { full_name?: string | null, phone?: string | null, address?: string | null }) {
+export async function updateProfile(updateData: { fullName?: string | null, phone?: string | null, address?: string | null }) {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 
@@ -359,7 +358,7 @@ export async function registerUser(email: string, password: string, name: string
         });
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message };
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
 }

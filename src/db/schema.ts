@@ -8,7 +8,6 @@ import {
     boolean,
     numeric
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 
 // Auth Users Table (Custom for NextAuth/Credentials)
 export const users = pgTable('users', {

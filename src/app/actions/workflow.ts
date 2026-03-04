@@ -31,14 +31,14 @@ async function createUser(email: string) {
 /**
  * Mock function to simulate sending a welcome email.
  */
-async function sendWelcomeEmail(user: any) {
+async function sendWelcomeEmail(user: typeof users.$inferSelect) {
   console.log(`[Workflow] Sending welcome email to: ${user.email}`);
 }
 
 /**
  * Mock function to simulate sending an onboarding email after a delay.
  */
-async function sendOnboardingEmail(user: any) {
+async function sendOnboardingEmail(user: typeof users.$inferSelect) {
   console.log(`[Workflow] Sending onboarding email to: ${user.email}`);
 }
 

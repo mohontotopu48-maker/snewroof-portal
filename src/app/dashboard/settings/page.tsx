@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Lock, Save, Camera, Globe, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import Image from 'next/image';
 
 
 interface Profile {
     id: string;
-    full_name: string | null;
+    fullName: string | null;
     phone: string | null;
     address: string | null;
-    avatar_url: string | null;
+    avatarUrl: string | null;
     role: string;
 }
 
@@ -55,7 +56,7 @@ export default function SettingsPage() {
 
             const newAvatarUrl = await uploadAvatar(formData);
 
-            setProfile(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : null);
+            setProfile(prev => prev ? { ...prev, avatarUrl: newAvatarUrl } : null);
             await refreshProfile();
             setStatus({ type: 'success', msg: 'Avatar updated successfully!' });
         } catch (err) {
@@ -75,7 +76,7 @@ export default function SettingsPage() {
 
         try {
             await updateProfile({
-                full_name: profile.full_name,
+                fullName: profile.fullName,
                 phone: profile.phone,
                 address: profile.address
             });
@@ -98,8 +99,8 @@ export default function SettingsPage() {
         );
     }
 
-    const initials = profile?.full_name
-        ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const initials = profile?.fullName
+        ? profile.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || 'U';
 
     return (
@@ -131,8 +132,8 @@ export default function SettingsPage() {
                         <form onSubmit={handleSave} style={{ display: 'grid', gap: 20 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 8 }}>
                                 <div style={{ position: 'relative' }}>
-                                    {profile?.avatar_url ? (
-                                        <img src={profile.avatar_url} alt="Avatar" className="avatar avatar-lg" style={{ objectFit: 'cover' }} />
+                                    {profile?.avatarUrl ? (
+                                        <Image src={profile.avatarUrl} alt="Avatar" className="avatar avatar-lg" width={52} height={52} style={{ objectFit: 'cover' }} />
                                     ) : (
                                         <div className="avatar avatar-lg">{initials}</div>
                                     )}
@@ -171,8 +172,8 @@ export default function SettingsPage() {
                                         <input
                                             type="text"
                                             className="form-input"
-                                            value={profile?.full_name || ''}
-                                            onChange={(e) => setProfile(p => p ? { ...p, full_name: e.target.value } : null)}
+                                            value={profile?.fullName || ''}
+                                            onChange={(e) => setProfile(p => p ? { ...p, fullName: e.target.value } : null)}
                                             style={{ paddingLeft: 40 }}
                                         />
                                     </div>

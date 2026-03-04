@@ -1,13 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { getProfile, registerUser } from '@/app/actions';
 
 interface Profile {
     id: string;
-    full_name: string | null;
-    avatar_url: string | null;
+    fullName: string | null;
+    avatarUrl: string | null;
     role: string;
 }
 
@@ -16,7 +16,7 @@ interface User {
     email: string;
     name?: string;
     role?: string;
-    avatar_url?: string;
+    avatarUrl?: string;
 }
 
 interface AuthContextType {
@@ -37,15 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [profileLoading, setProfileLoading] = useState(false);
     const loading = status === 'loading' || profileLoading;
 
-    useEffect(() => {
-        if (session?.user?.email) {
-            fetchProfile();
-        } else {
-            setProfile(null);
-        }
-    }, [session?.user?.email]);
-
-    const fetchProfile = async () => {
+    const fetchProfile = useCallback(async () => {
         if (!session?.user) return;
         setProfileLoading(true);
         try {
@@ -58,7 +50,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } finally {
             setProfileLoading(false);
         }
-    };
+    }, [session?.user]);
+
+    useEffect(() => {
+        if (session?.user?.email) {
+            fetchProfile();
+        } else {
+            setProfile(null);
+        }
+    }, [session?.user?.email, fetchProfile]);
 
     const handleSignIn = async (email: string, password: string) => {
         const result = await signIn('credentials', {
@@ -88,9 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const user: User | null = session?.user ? ({
         id: (session.user as { id?: string }).id || '',
         email: session.user.email || '',
-        name: profile?.full_name || session.user.name || undefined,
+        name: profile?.fullName || session.user.name || undefined,
         role: profile?.role || (session.user as { role?: string }).role || 'customer',
-        avatar_url: profile?.avatar_url || undefined
+        avatarUrl: profile?.avatarUrl || undefined
     }) : null;
 
     return (

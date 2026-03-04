@@ -3,10 +3,11 @@
 import { useAuth } from '@/lib/auth-context';
 import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export function Topbar() {
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, signOut } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
 
     const initials = user?.name
@@ -74,8 +75,8 @@ export function Topbar() {
                             cursor: 'pointer',
                         }}
                     >
-                        {user?.avatar_url ? (
-                            <img src={user.avatar_url} alt="Avatar" className="avatar" style={{ width: 28, height: 28, objectFit: 'cover' }} />
+                        {user?.avatarUrl ? (
+                            <Image src={user.avatarUrl} alt="Avatar" className="avatar" width={28} height={28} style={{ objectFit: 'cover' }} />
                         ) : (
                             <div className="avatar" style={{ width: 28, height: 28, fontSize: 12 }}>{initials}</div>
                         )}
@@ -94,7 +95,16 @@ export function Topbar() {
                                     Admin Panel
                                 </Link>
                             )}
-                            <div className="dropdown-item" style={{ color: '#f87171', cursor: 'pointer' }}>Sign Out</div>
+                            <div 
+                                className="dropdown-item" 
+                                style={{ color: '#f87171', cursor: 'pointer' }}
+                                onClick={() => {
+                                    setShowDropdown(false);
+                                    signOut();
+                                }}
+                            >
+                                Sign Out
+                            </div>
                         </div>
                     )}
                 </div>
