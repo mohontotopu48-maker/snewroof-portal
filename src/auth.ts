@@ -1,6 +1,9 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import insforge from "@/lib/insforge";
+import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { users, profiles } from "@/db/schema";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -13,20 +16,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const { data, error } = await insforge.auth.signInWithPassword({
-          email: credentials.email as string,
-          password: credentials.password as string,
-        });
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
-        if (error || !data?.user) {
-          throw new Error(error?.message || "Invalid credentials");
+        // Find user by email
+        const userResult = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        const user = userResult[0];
+
+        if (!user) {
+          throw new Error("Invalid credentials");
         }
 
+        // Verify password
+        const isValid = await bcrypt.compare(password, user.passwordHash);
+        if (!isValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        // Fetch profile to get role and name
+        const profileResult = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+        const profile = profileResult[0];
+
         return {
-          id: data.user.id,
-          email: data.user.email,
-          name: (data.user.profile as { name?: string })?.name,
-          role: (data.user.profile as { role?: string })?.role,
+          id: user.id,
+          email: user.email,
+          name: profile?.fullName,
+          role: profile?.role || 'customer',
         };
       },
     }),

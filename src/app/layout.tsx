@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@/lib/auth-context';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: 'Snewroof — Customer Portal',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <AuthProvider>
             {children}
+            <SpeedInsights />
           </AuthProvider>
         </SessionProvider>
       </body>

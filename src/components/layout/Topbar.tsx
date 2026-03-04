@@ -74,7 +74,11 @@ export function Topbar() {
                             cursor: 'pointer',
                         }}
                     >
-                        <div className="avatar" style={{ width: 28, height: 28, fontSize: 12 }}>{initials}</div>
+                        {user?.avatar_url ? (
+                            <img src={user.avatar_url} alt="Avatar" className="avatar" style={{ width: 28, height: 28, objectFit: 'cover' }} />
+                        ) : (
+                            <div className="avatar" style={{ width: 28, height: 28, fontSize: 12 }}>{initials}</div>
+                        )}
                         <div style={{ textAlign: 'left' }}>
                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--white)' }}>{user?.name || 'User'}</div>
                             <div style={{ fontSize: 11, color: 'var(--slate-400)' }}>{isAdmin ? 'Admin' : 'Customer'}</div>
@@ -86,7 +90,7 @@ export function Topbar() {
                                 Settings
                             </Link>
                             {isAdmin && (
-                                <Link href="/admin" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                                <Link href="/dashboard/admin/documents" className="dropdown-item" onClick={() => setShowDropdown(false)}>
                                     Admin Panel
                                 </Link>
                             )}

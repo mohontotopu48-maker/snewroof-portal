@@ -1,21 +1,54 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, MessageSquare, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, ShieldCheck, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import insforge from '@/lib/insforge';
 
 export default function BookInspectionPage() {
-    useAuth();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [formData, setFormData] = useState({
+        type: 'Full Roof Assessment',
+        preferred_date: '',
+        preferred_time: 'Morning (8 AM - 12 PM)',
+        address: '',
+        description: ''
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
+
         setLoading(true);
-        // Simulate API call
-        await new Promise(r => setTimeout(r, 1500));
-        setLoading(false);
-        setSuccess(true);
+        setError(null);
+
+        try {
+            const { error: insertError } = await insforge.database
+                .from('inspections')
+                .insert([{
+                    user_id: user.id,
+                    name: user.name || 'Unnamed Customer',
+                    email: user.email,
+                    address: formData.address,
+                    property_type: 'residential', // default
+                    preferred_date: formData.preferred_date,
+                    description: `${formData.type}. Time Window: ${formData.preferred_time}. ${formData.description}`,
+                    status: 'pending'
+                }]);
+
+            if (insertError) throw insertError;
+
+            setSuccess(true);
+        } catch (err) {
+            console.error('Error booking inspection:', err);
+            setError((err as Error).message || 'Failed to book inspection. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (success) {
@@ -50,10 +83,24 @@ export default function BookInspectionPage() {
 
             <div className="grid-2" style={{ alignItems: 'start' }}>
                 <div className="card">
+                    {error && (
+                        <div style={{
+                            marginBottom: 24, padding: '12px 16px', borderRadius: 8,
+                            background: 'rgba(239,68,68,0.1)', border: '1px solid var(--error)',
+                            color: 'var(--error)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 14
+                        }}>
+                            <AlertCircle size={18} />
+                            {error}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 24 }}>
                         <div className="form-group">
                             <label className="form-label">Inspection Type</label>
-                            <select className="form-input">
+                            <select
+                                className="form-input"
+                                value={formData.type}
+                                onChange={(e) => setFormData(p => ({ ...p, type: e.target.value }))}
+                            >
                                 <option>Full Roof Assessment</option>
                                 <option>Leak Investigation</option>
                                 <option>Storm Damage Inspection</option>
@@ -67,14 +114,26 @@ export default function BookInspectionPage() {
                                 <label className="form-label">Preferred Date</label>
                                 <div style={{ position: 'relative' }}>
                                     <Calendar size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-500)' }} />
-                                    <input type="date" className="form-input" style={{ paddingLeft: 44 }} required />
+                                    <input
+                                        type="date"
+                                        className="form-input"
+                                        style={{ paddingLeft: 44 }}
+                                        required
+                                        value={formData.preferred_date}
+                                        onChange={(e) => setFormData(p => ({ ...p, preferred_date: e.target.value }))}
+                                    />
                                 </div>
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Preferred Time Window</label>
                                 <div style={{ position: 'relative' }}>
                                     <Clock size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-500)' }} />
-                                    <select className="form-input" style={{ paddingLeft: 44 }}>
+                                    <select
+                                        className="form-input"
+                                        style={{ paddingLeft: 44 }}
+                                        value={formData.preferred_time}
+                                        onChange={(e) => setFormData(p => ({ ...p, preferred_time: e.target.value }))}
+                                    >
                                         <option>Morning (8 AM - 12 PM)</option>
                                         <option>Afternoon (12 PM - 4 PM)</option>
                                         <option>Evening (4 PM - 6 PM)</option>
@@ -87,7 +146,15 @@ export default function BookInspectionPage() {
                             <label className="form-label">Property Address</label>
                             <div style={{ position: 'relative' }}>
                                 <MapPin size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-500)' }} />
-                                <input type="text" className="form-input" placeholder="Enter full address" style={{ paddingLeft: 44 }} required />
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Enter full address"
+                                    style={{ paddingLeft: 44 }}
+                                    required
+                                    value={formData.address}
+                                    onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
+                                />
                             </div>
                         </div>
 
@@ -95,12 +162,18 @@ export default function BookInspectionPage() {
                             <label className="form-label">Special Instructions or Notes</label>
                             <div style={{ position: 'relative' }}>
                                 <MessageSquare size={18} style={{ position: 'absolute', left: 14, top: 14, color: 'var(--slate-500)' }} />
-                                <textarea className="form-input" placeholder="e.g., Gate code, specific area of concern..." style={{ paddingLeft: 44, minHeight: 120 }} />
+                                <textarea
+                                    className="form-input"
+                                    placeholder="e.g., Gate code, specific area of concern..."
+                                    style={{ paddingLeft: 44, minHeight: 120 }}
+                                    value={formData.description}
+                                    onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                                />
                             </div>
                         </div>
 
                         <button type="submit" className="btn btn-primary btn-lg" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-                            {loading ? 'Submitting Request...' : (
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : (
                                 <>Confirm Inspection Request <ArrowRight size={20} /></>
                             )}
                         </button>

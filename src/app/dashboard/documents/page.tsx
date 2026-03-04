@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, ImageIcon, Download, Eye, HardHat, Search, Filter, X, ExternalLink, File as FileIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import insforge from '@/lib/insforge';
+import { getDocuments } from '@/app/actions';
 
 interface SharedDocument {
     id: string;
@@ -18,7 +18,7 @@ interface SharedDocument {
     };
     projects?: {
         title: string;
-    };
+    } | null;
 }
 
 export default function DocumentsPage() {
@@ -30,25 +30,19 @@ export default function DocumentsPage() {
     useEffect(() => {
         if (!user) return;
 
-        const fetchDocs = async () => {
+        const doFetchDocs = async () => {
             setLoading(true);
-            const { data } = await insforge.database
-                .from('document_shares')
-                .select(`
-                    id, 
-                    document_id, 
-                    created_at,
-                    documents:document_id (id, name, url, mime_type, size),
-                    projects:project_id (title)
-                `)
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-
-            if (data) setDocs(data as unknown as SharedDocument[]);
-            setLoading(false);
+            try {
+                const data = await getDocuments();
+                setDocs(data as unknown as SharedDocument[]);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        fetchDocs();
+        doFetchDocs();
     }, [user]);
 
     const formatSize = (bytes: number) => {

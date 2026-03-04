@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HardHat, MapPin, Calendar, Clock, Image as ImageIcon, CheckCircle2, X, Eye, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import insforge from '@/lib/insforge';
+
 
 interface Project {
     id: string;
@@ -24,6 +24,8 @@ interface SharedPhoto {
     };
 }
 
+import { getProjects, getSharedPhotos } from '@/app/actions';
+
 export default function ProjectsPage() {
     const { user } = useAuth();
     const [projects, setProjects] = useState<Project[]>([]);
@@ -36,34 +38,17 @@ export default function ProjectsPage() {
 
         const fetchData = async () => {
             setLoading(true);
+            try {
+                const projData = await getProjects();
+                const photoData = await getSharedPhotos();
 
-            // 1. Fetch Projects
-            const { data: projData } = await insforge.database
-                .from('projects')
-                .select('*')
-                .eq('user_id', user.id);
-
-            // 2. Fetch Shared Photos (mime_type starts with image/)
-            const { data: photoData } = await insforge.database
-                .from('document_shares')
-                .select(`
-                    id,
-                    documents:document_id (id, name, url, mime_type)
-                `)
-                .eq('user_id', user.id);
-
-            if (projData) setProjects(projData);
-
-            // Filter photos only
-            if (photoData) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const filteredPhotos = (photoData as any[]).filter(p =>
-                    p.documents?.mime_type?.startsWith('image/')
-                );
-                setPhotos(filteredPhotos);
+                setProjects(projData as unknown as Project[]);
+                setPhotos(photoData as unknown as SharedPhoto[]);
+            } catch (err) {
+                console.error("Error fetching projects data:", err);
+            } finally {
+                setLoading(false);
             }
-
-            setLoading(false);
         };
 
         fetchData();
