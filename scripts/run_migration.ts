@@ -1,28 +1,31 @@
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { neon } from '@neondatabase/serverless';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-    console.error('DATABASE_URL is not set');
-    process.exit(1);
-}
+// Force dotenv to load the local env file
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
-const sql = neon(DATABASE_URL);
-const sqlContent = readFileSync(join(import.meta.dirname, 'migrate_neon.sql'), 'utf8');
+const pool = new Pool({
+    connectionString: process.env.POSTGRES_URL_NON_POOLING,
+    ssl: { rejectUnauthorized: false }
+});
 
-// Split on statement boundaries (handle multi-line statements)
-// We'll execute the whole file at once since neon supports multi-statement
-try {
-    console.log('Running migration...');
-    await sql.transaction((tx) => [tx.unsafe(sqlContent)]);
-    console.log('✅ Migration completed successfully!');
-} catch (err: unknown) {
-    // Some statements like CREATE EXTENSION may already exist — log and continue
-    if (err instanceof Error && err.message.includes('already exists')) {
-        console.warn('⚠️  Some objects already exist (safe to ignore):', err.message);
-    } else {
-        console.error('❌ Migration error:', err);
-        process.exit(1);
+async function run() {
+    try {
+        console.log("Reading schema.sql...");
+        const sqlContent = readFileSync(join(process.cwd(), 'scripts', 'schema.sql'), 'utf8');
+
+        console.log("Executing schema.sql on Neon via standard pg client...");
+        await pool.query(sqlContent);
+
+        console.log("✅ Schema update completed successfully!");
+    } catch (e) {
+        console.error("❌ Schema update failed:");
+        console.error(e);
+    } finally {
+        await pool.end();
     }
 }
+
+run();
