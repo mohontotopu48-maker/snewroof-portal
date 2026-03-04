@@ -1,7 +1,5 @@
 import { sleep } from "workflow";
-import { db } from "@/lib/db";
-import { users, profiles } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { insforge } from "@/lib/insforge";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -9,36 +7,36 @@ import { v4 as uuidv4 } from "uuid";
  * This is used by the workflow to demonstrate durable execution.
  */
 async function createUser(email: string) {
-  const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const { data: existing } = await insforge.database
+    .from('profiles')
+    .select()
+    .eq('email', email)
+    .maybeSingle();
+
   if (existing) return existing;
 
   const userId = uuidv4();
-  const [newUser] = await db.insert(users).values({
-    id: userId,
-    email,
-    passwordHash: "workflow-demo-hash", // Mock password hash for demo
-  }).returning();
 
-  await db.insert(profiles).values({
+  await insforge.database.from('profiles').insert({
     id: userId,
-    fullName: "Workflow Demo User",
+    full_name: "Workflow Demo User",
     role: "customer"
   });
-  
-  return newUser;
+
+  return { id: userId, email };
 }
 
 /**
  * Mock function to simulate sending a welcome email.
  */
-async function sendWelcomeEmail(user: typeof users.$inferSelect) {
+async function sendWelcomeEmail(user: any) {
   console.log(`[Workflow] Sending welcome email to: ${user.email}`);
 }
 
 /**
  * Mock function to simulate sending an onboarding email after a delay.
  */
-async function sendOnboardingEmail(user: typeof users.$inferSelect) {
+async function sendOnboardingEmail(user: any) {
   console.log(`[Workflow] Sending onboarding email to: ${user.email}`);
 }
 
@@ -57,6 +55,6 @@ export async function handleUserSignup(email: string) {
   await sleep("5s");
 
   await sendOnboardingEmail(user);
-  
+
   return { userId: user.id, status: "onboarded" };
 }

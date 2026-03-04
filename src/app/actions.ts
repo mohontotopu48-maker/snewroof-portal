@@ -1,278 +1,301 @@
 'use server';
 
-import { db } from '@/lib/db';
-import { quotes, projects, invoices, inspections, messages, documentShares, documents, profiles, users } from '@/db/schema';
+import { insforge } from '@/lib/insforge';
 import { v4 as uuidv4 } from 'uuid';
-
-import { eq, desc, or } from 'drizzle-orm';
 
 const DUMMY_USER_ID = '00000000-0000-0000-0000-000000000001';
 const DUMMY_USER_EMAIL = 'customer@example.com';
 
 export async function getQuotes() {
-    const data = await db.select().from(quotes)
-        .where(eq(quotes.userId, DUMMY_USER_ID))
-        .orderBy(desc(quotes.createdAt));
+    const { data, error } = await insforge.database
+        .from('quotes')
+        .select()
+        .eq('user_id', DUMMY_USER_ID)
+        .order('created_at', { ascending: false });
 
-    // Convert Date objects to ISO strings for client components
-    return data.map(q => ({
+    if (error) throw error;
+
+    return (data || []).map((q: any) => ({
         ...q,
-        createdAt: q.createdAt?.toISOString() || '',
-        updatedAt: q.updatedAt?.toISOString() || '',
+        createdAt: q.created_at || '',
+        updatedAt: q.updated_at || '',
     }));
 }
 
 export async function getProjects() {
-    const data = await db.select().from(projects)
-        .where(eq(projects.userId, DUMMY_USER_ID))
-        .orderBy(desc(projects.createdAt));
+    const { data, error } = await insforge.database
+        .from('projects')
+        .select()
+        .eq('user_id', DUMMY_USER_ID)
+        .order('created_at', { ascending: false });
 
-    return data.map(p => ({
+    if (error) throw error;
+
+    return (data || []).map((p: any) => ({
         ...p,
-        createdAt: p.createdAt?.toISOString() || '',
-        updatedAt: p.updatedAt?.toISOString() || '',
+        createdAt: p.created_at || '',
+        updatedAt: p.updated_at || '',
     }));
 }
 
 export async function getInvoices() {
-    const data = await db.select({
-        id: invoices.id,
-        amount: invoices.amount,
-        dueDate: invoices.dueDate,
-        paidAt: invoices.paidAt,
-        status: invoices.status,
-        notes: invoices.notes,
-        projectId: invoices.projectId,
-        createdAt: invoices.createdAt,
-        updatedAt: invoices.updatedAt,
-        projects: {
-            title: projects.title
-        }
-    })
-        .from(invoices)
-        .leftJoin(projects, eq(invoices.projectId, projects.id))
-        .where(eq(invoices.userId, DUMMY_USER_ID))
-        .orderBy(desc(invoices.createdAt));
+    // InsForge supports JOINs using table syntax
+    const { data, error } = await insforge.database
+        .from('invoices')
+        .select('*, projects(title)')
+        .eq('user_id', DUMMY_USER_ID)
+        .order('created_at', { ascending: false });
 
-    return data.map(i => ({
+    if (error) throw error;
+
+    return (data || []).map((i: any) => ({
         ...i,
         amount: Number(i.amount || 0),
-        due_date: i.dueDate ? String(i.dueDate) : '',
-        paid_at: i.paidAt?.toISOString() || null,
+        due_date: i.due_date ? String(i.due_date) : '',
+        paid_at: i.paid_at || null,
         status: i.status || 'unpaid',
         notes: i.notes || '',
-        project_id: i.projectId || '',
-        created_at: i.createdAt?.toISOString() || '',
-        updated_at: i.updatedAt?.toISOString() || '',
+        project_id: i.project_id || '',
+        created_at: i.created_at || '',
+        updated_at: i.updated_at || '',
+        projects: { title: Array.isArray(i.projects) ? i.projects[0]?.title : i.projects?.title || '' }
     }));
 }
 
 export async function getInspections() {
-    const data = await db.select().from(inspections)
-        .where(eq(inspections.userId, DUMMY_USER_ID))
-        .orderBy(desc(inspections.createdAt));
+    const { data, error } = await insforge.database
+        .from('inspections')
+        .select()
+        .eq('user_id', DUMMY_USER_ID)
+        .order('created_at', { ascending: false });
 
-    return data.map(i => ({
+    if (error) throw error;
+
+    return (data || []).map((i: any) => ({
         ...i,
-        createdAt: i.createdAt?.toISOString() || '',
-        updatedAt: i.updatedAt?.toISOString() || '',
+        createdAt: i.created_at || '',
+        updatedAt: i.updated_at || '',
     }));
 }
 
 export async function getMessages() {
-    // Fetch conversation where user is either sender or receiver
-    const data = await db.select().from(messages)
-        .where(
-            or(
-                eq(messages.receiverId, DUMMY_USER_ID),
-                eq(messages.senderId, DUMMY_USER_ID)
-            )
-        )
-        // Fetch ordered by time ascending (oldest first for chat UI)
-        .orderBy(messages.createdAt);
+    const { data, error } = await insforge.database
+        .from('messages')
+        .select()
+        .or(`receiver_id.eq.${DUMMY_USER_ID},sender_id.eq.${DUMMY_USER_ID}`)
+        .order('created_at', { ascending: true });
 
-    return data.map(m => ({
+    if (error) throw error;
+
+    return (data || []).map((m: any) => ({
         ...m,
-        created_at: m.createdAt?.toISOString() || '',
-        sender_id: m.senderId || '',
-        receiver_id: m.receiverId || ''
+        created_at: m.created_at || '',
+        sender_id: m.sender_id || '',
+        receiver_id: m.receiver_id || ''
     }));
 }
 
 export async function sendMessage(content: string) {
-    // Find an admin to receive the message (fallback as in original code)
-    const adminData = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.role, 'admin')).limit(1);
-    const receiverId = adminData[0]?.id || '00000000-0000-0000-0000-000000000000';
+    const { data: adminData } = await insforge.database
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin')
+        .limit(1);
 
-    await db.insert(messages).values({
-        senderId: DUMMY_USER_ID,
-        receiverId,
+    const receiverId = adminData && adminData.length > 0 ? adminData[0].id : '00000000-0000-0000-0000-000000000000';
+
+    await insforge.database.from('messages').insert({
+        sender_id: DUMMY_USER_ID,
+        receiver_id: receiverId,
         content,
         read: false
     });
 }
 
 export async function getDocuments() {
-    const data = await db.select({
-        id: documentShares.id,
-        createdAt: documentShares.createdAt,
-        documentId: documentShares.documentId,
-        documents: {
-            id: documents.id,
-            name: documents.name,
-            url: documents.url,
-            mimeType: documents.mimeType,
-            size: documents.size
-        },
-        projects: {
-            title: projects.title
-        }
-    })
-        .from(documentShares)
-        .innerJoin(documents, eq(documentShares.documentId, documents.id))
-        .leftJoin(projects, eq(documentShares.projectId, projects.id))
-        .where(eq(documentShares.userId, DUMMY_USER_ID))
-        .orderBy(desc(documentShares.createdAt));
+    const { data, error } = await insforge.database
+        .from('document_shares')
+        .select('*, documents(*), projects(title)')
+        .eq('user_id', DUMMY_USER_ID)
+        .order('created_at', { ascending: false });
 
-    return data.map(d => ({
-        ...d,
-        created_at: d.createdAt ? String(d.createdAt) : '',
-        document_id: d.documentId || '',
-        documents: {
-            ...d.documents,
-            mime_type: d.documents.mimeType || 'application/octet-stream'
-        }
-    }));
+    if (error) throw error;
+
+    return (data || []).map((d: any) => {
+        const doc = Array.isArray(d.documents) ? d.documents[0] : d.documents;
+        return {
+            ...d,
+            created_at: d.created_at || '',
+            document_id: d.document_id || '',
+            documents: {
+                id: doc?.id,
+                name: doc?.name,
+                url: doc?.url,
+                mime_type: doc?.mime_type || 'application/octet-stream',
+                size: doc?.size
+            },
+            projects: {
+                title: Array.isArray(d.projects) ? d.projects[0]?.title : d.projects?.title || ''
+            }
+        };
+    });
 }
 
 export async function updatePassword(_newPassword: string) {
-    // No-op or throw error since auth is removed
     console.log("Password update requested for dummy user, ignoring.");
     return;
 }
 
 export async function getSharedPhotos() {
-    // Drizzle inner join
-    const data = await db.select({
-        id: documentShares.id,
-        documents: {
-            id: documents.id,
-            name: documents.name,
-            url: documents.url,
-            mimeType: documents.mimeType
-        }
-    })
-        .from(documentShares)
-        .innerJoin(documents, eq(documentShares.documentId, documents.id))
-        .where(eq(documentShares.userId, DUMMY_USER_ID));
+    const { data, error } = await insforge.database
+        .from('document_shares')
+        .select('*, documents(*)')
+        .eq('user_id', DUMMY_USER_ID);
 
-    // Filter only images (as per original logic)
-    return data.filter(d => d.documents.mimeType?.startsWith('image/'));
+    if (error) throw error;
+
+    const formattedData = (data || []).map((d: any) => {
+        const doc = Array.isArray(d.documents) ? d.documents[0] : d.documents;
+        return {
+            id: d.id,
+            documents: {
+                id: doc?.id,
+                name: doc?.name,
+                url: doc?.url,
+                mimeType: doc?.mime_type,
+            }
+        };
+    });
+
+    return formattedData.filter(d => d.documents.mimeType?.startsWith('image/'));
 }
 
-import { put } from '@vercel/blob';
-
 export async function getProfile() {
-    const data = await db.select().from(profiles).where(eq(profiles.id, DUMMY_USER_ID)).limit(1);
-    return data[0] || null;
+    const { data, error } = await insforge.database
+        .from('profiles')
+        .select()
+        .eq('id', DUMMY_USER_ID)
+        .maybeSingle(); // maybeSingle instead of single so it returns null if missing
+
+    if (error) throw error;
+
+    return data ? { ...data, fullName: data.full_name, avatarUrl: data.avatar_url } : null;
 }
 
 export async function updateProfile(updateData: { fullName?: string | null, phone?: string | null, address?: string | null }) {
-    await db.update(profiles)
-        .set(updateData)
-        .where(eq(profiles.id, DUMMY_USER_ID));
+    await insforge.database
+        .from('profiles')
+        .update({
+            full_name: updateData.fullName,
+            phone: updateData.phone,
+            address: updateData.address
+        })
+        .eq('id', DUMMY_USER_ID);
 }
 
 export async function uploadAvatar(formData: FormData) {
     const file = formData.get('file') as File;
     if (!file) throw new Error('No file provided');
 
-    const blob = await put(`avatars/${DUMMY_USER_ID}/${file.name}`, file, {
-        access: 'public',
-    });
+    const { data, error } = await insforge.storage
+        .from('avatars')
+        .upload(`${DUMMY_USER_ID}/${file.name}`, file);
 
-    await db.update(profiles).set({ avatarUrl: blob.url }).where(eq(profiles.id, DUMMY_USER_ID));
-    return blob.url;
+    if (error) throw error;
+    if (!data) throw new Error('Upload failed');
+
+    await insforge.database
+        .from('profiles')
+        .update({ avatar_url: data.url })
+        .eq('id', DUMMY_USER_ID);
+
+    return data.url;
 }
 
 export async function getAdminProfiles() {
-    const data = await db.select({
-        id: profiles.id,
-        full_name: profiles.fullName,
-        role: profiles.role
-    }).from(profiles);
+    const { data, error } = await insforge.database
+        .from('profiles')
+        .select('id, full_name, role');
 
-    return data;
-}
-
-export async function getAdminCustomers() {
-    const data = await db.select({
-        id: users.id,
-        email: users.email,
-        createdAt: users.createdAt,
-        fullName: profiles.fullName,
-        phone: profiles.phone,
-        role: profiles.role,
-        avatarUrl: profiles.avatarUrl,
-    })
-        .from(users)
-        .leftJoin(profiles, eq(profiles.id, users.id))
-        .orderBy(desc(users.createdAt));
-
-    return data.map(u => ({
-        ...u,
-        createdAt: u.createdAt?.toISOString() || '',
+    if (error) throw error;
+    return (data || []).map((p: any) => ({
+        id: p.id,
+        full_name: p.full_name,
+        role: p.role
     }));
 }
 
-export async function createAdminCustomer(data: {
+export async function getAdminCustomers() {
+    const { data, error } = await insforge.database
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((p: any) => ({
+        id: p.id,
+        email: 'customer@example.com',
+        createdAt: p.created_at || '',
+        fullName: p.full_name,
+        phone: p.phone,
+        role: p.role,
+        avatarUrl: p.avatar_url
+    }));
+}
+
+export async function createAdminCustomer(param: {
     email: string;
     password: string;
     fullName: string;
     phone?: string;
     role?: string;
 }) {
-
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, data.email)).limit(1);
-    if (existing.length > 0) return { error: 'Email already in use' };
-
     const userId = uuidv4();
+    const { error } = await insforge.database
+        .from('profiles')
+        .insert({
+            id: userId,
+            full_name: param.fullName,
+            phone: param.phone || null,
+            role: param.role || 'customer'
+        });
 
-    await db.insert(users).values({ id: userId, email: data.email });
-    await db.insert(profiles).values({
-        id: userId,
-        fullName: data.fullName,
-        phone: data.phone || null,
-        role: data.role || 'customer',
-    });
-
+    if (error) return { error: error.message };
     return { error: null, id: userId };
 }
 
 export async function updateCustomerRole(userId: string, role: string) {
-    await db.update(profiles).set({ role }).where(eq(profiles.id, userId));
+    await insforge.database
+        .from('profiles')
+        .update({ role })
+        .eq('id', userId);
 }
 
 export async function deleteCustomer(userId: string) {
-    // Cascade deletes profile too (FK ON DELETE CASCADE)
-    await db.delete(users).where(eq(users.id, userId));
+    await insforge.database
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
 }
 
 export async function resetCustomerPassword(_userId: string, _newPassword: string) {
-    // No-op
     console.log("Password reset requested for dummy user, ignoring.");
     return;
 }
 
-
 export async function getAdminProjects() {
-    const data = await db.select({
-        id: projects.id,
-        title: projects.title,
-        user_id: projects.userId
-    }).from(projects);
+    const { data, error } = await insforge.database
+        .from('projects')
+        .select('id, title, user_id');
 
-    return data;
+    if (error) throw error;
+
+    return (data || []).map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        user_id: p.user_id,
+    }));
 }
 
 export async function uploadAdminDocument(formData: FormData) {
@@ -282,32 +305,40 @@ export async function uploadAdminDocument(formData: FormData) {
 
     if (!file || !userId) throw new Error('Missing file or user selection');
 
-    // 1. Upload to Vercel Blob
-    const blob = await put(`documents/${userId}/${file.name}`, file, {
-        access: 'public',
-    });
+    const { data: blob, error: uploadError } = await insforge.storage
+        .from('documents')
+        .upload(`${userId}/${file.name}`, file);
 
-    // 2. Create document record
-    const [doc] = await db.insert(documents).values({
-        name: file.name,
-        url: blob.url,
-        storageKey: blob.url, // In Vercel Blob, URL can serve as key
-        mimeType: file.type,
-        size: file.size,
-        uploadedBy: DUMMY_USER_ID
-    }).returning();
+    if (uploadError) throw uploadError;
+    if (!blob) throw new Error('Upload failed');
 
-    // 3. Create share record
-    await db.insert(documentShares).values({
-        documentId: doc.id,
-        userId: userId,
-        projectId: projectId || null
-    });
+    const { data: docs, error: dbError } = await insforge.database
+        .from('documents')
+        .insert({
+            name: file.name,
+            url: blob.url,
+            storage_key: blob.key,
+            mime_type: file.type,
+            size: file.size,
+            uploaded_by: DUMMY_USER_ID
+        })
+        .select();
+
+    if (dbError) throw dbError;
+    const doc = (docs as any[])[0];
+
+    await insforge.database
+        .from('document_shares')
+        .insert({
+            document_id: doc.id,
+            user_id: userId,
+            project_id: projectId || null
+        });
 
     return { success: true };
 }
 
-export async function bookInspection(data: {
+export async function bookInspection(param: {
     address: string;
     property_type: string;
     preferred_date: string;
@@ -315,14 +346,14 @@ export async function bookInspection(data: {
 }) {
     const profile = await getProfile();
 
-    await db.insert(inspections).values({
-        userId: DUMMY_USER_ID,
+    await insforge.database.from('inspections').insert({
+        user_id: DUMMY_USER_ID,
         name: profile?.fullName || 'Unnamed Customer',
         email: DUMMY_USER_EMAIL,
-        address: data.address,
-        propertyType: data.property_type,
-        preferredDate: data.preferred_date,
-        description: data.description,
+        address: param.address,
+        property_type: param.property_type,
+        preferred_date: param.preferred_date,
+        description: param.description,
         status: 'pending'
     });
 
@@ -330,42 +361,28 @@ export async function bookInspection(data: {
 }
 
 export async function getDashboardStats() {
-    const [p, q, i] = await Promise.all([
-        db.select({ status: projects.status }).from(projects).where(eq(projects.userId, DUMMY_USER_ID)),
-        db.select({ status: quotes.status }).from(quotes).where(eq(quotes.userId, DUMMY_USER_ID)),
-        db.select({ preferredDate: inspections.preferredDate }).from(inspections).where(eq(inspections.userId, DUMMY_USER_ID)).orderBy(inspections.preferredDate)
-    ]);
+    const { data: p } = await insforge.database.from('projects').select('status').eq('user_id', DUMMY_USER_ID);
+    const { data: q } = await insforge.database.from('quotes').select('status').eq('user_id', DUMMY_USER_ID);
+    const { data: i } = await insforge.database.from('inspections').select('preferred_date').eq('user_id', DUMMY_USER_ID).order('preferred_date');
 
     const stats = {
-        activeProjects: p.filter((proj: { status: string | null }) => proj.status === 'active').length,
-        completedJobs: p.filter((proj: { status: string | null }) => proj.status === 'completed').length,
-        pendingQuotes: q.filter((quote: { status: string | null }) => quote.status === 'pending').length,
-        inspections: i.map((ins: { preferredDate: string | Date | null }) => ({ preferred_date: ins.preferredDate ? String(ins.preferredDate) : null }))
+        activeProjects: (p || []).filter((proj: any) => proj.status === 'active').length,
+        completedJobs: (p || []).filter((proj: any) => proj.status === 'completed').length,
+        pendingQuotes: (q || []).filter((quote: any) => quote.status === 'pending').length,
+        inspections: (i || []).map((ins: any) => ({ preferred_date: ins.preferred_date ? String(ins.preferred_date) : null }))
     };
     return stats;
 }
 
-
-
 export async function registerUser(email: string, password: string, name: string) {
-    // Check if user exists
-    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    if (existingUser.length > 0) return { error: 'Email already in use' };
-
     const userId = uuidv4();
-
     try {
-        await db.insert(users).values({
+        const { error } = await insforge.database.from('profiles').insert({
             id: userId,
-            email,
-        });
-
-        await db.insert(profiles).values({
-            id: userId,
-            fullName: name,
+            full_name: name,
             role: 'customer'
         });
-
+        if (error) return { error: error.message };
         return { error: null };
     } catch (error) {
         return { error: error instanceof Error ? error.message : 'An unknown error occurred' };
