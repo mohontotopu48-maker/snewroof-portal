@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Receipt, Download, CreditCard, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 
 interface Invoice {
     id: string;
@@ -20,7 +20,7 @@ interface Invoice {
 import { getInvoices } from '@/app/actions';
 
 export default function InvoicesPage() {
-    const { user } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ outstanding: 0, paid: 0, nextDue: 'None' });

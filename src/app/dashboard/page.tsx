@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth-context';
+
 import {
     HardHat, FileText,
     Calendar, CheckCircle, Clock, Loader2
@@ -27,7 +27,7 @@ interface Activity {
 import { getDashboardStats } from '@/app/actions';
 
 export default function DashboardPage() {
-    const { user } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [stats, setStats] = useState<DashboardStats>({
         activeProjects: 0,
         pendingQuotes: 0,

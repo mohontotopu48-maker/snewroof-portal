@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Send, Phone, Mail, Paperclip, Loader2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 
 
 interface Message {
@@ -20,7 +20,7 @@ interface Message {
 import { getMessages, sendMessage } from '@/app/actions';
 
 export default function MessagesPage() {
-    const { user } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);

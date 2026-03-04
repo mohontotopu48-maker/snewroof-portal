@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HardHat, MapPin, Calendar, Clock, Image as ImageIcon, CheckCircle2, X, Eye, ExternalLink } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 
 
 interface Project {
@@ -27,7 +27,7 @@ interface SharedPhoto {
 import { getProjects, getSharedPhotos } from '@/app/actions';
 
 export default function ProjectsPage() {
-    const { user } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [projects, setProjects] = useState<Project[]>([]);
     const [photos, setPhotos] = useState<SharedPhoto[]>([]);
     const [loading, setLoading] = useState(true);

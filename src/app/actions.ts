@@ -3,16 +3,15 @@
 import { db } from '@/lib/db';
 import { quotes, projects, invoices, inspections, messages, documentShares, documents, profiles, users } from '@/db/schema';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
+
 import { eq, desc, or } from 'drizzle-orm';
-import { auth } from '@/auth';
+
+const DUMMY_USER_ID = '00000000-0000-0000-0000-000000000001';
+const DUMMY_USER_EMAIL = 'customer@example.com';
 
 export async function getQuotes() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select().from(quotes)
-        .where(eq(quotes.userId, session.user.id))
+        .where(eq(quotes.userId, DUMMY_USER_ID))
         .orderBy(desc(quotes.createdAt));
 
     // Convert Date objects to ISO strings for client components
@@ -24,11 +23,8 @@ export async function getQuotes() {
 }
 
 export async function getProjects() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select().from(projects)
-        .where(eq(projects.userId, session.user.id))
+        .where(eq(projects.userId, DUMMY_USER_ID))
         .orderBy(desc(projects.createdAt));
 
     return data.map(p => ({
@@ -39,9 +35,6 @@ export async function getProjects() {
 }
 
 export async function getInvoices() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select({
         id: invoices.id,
         amount: invoices.amount,
@@ -58,7 +51,7 @@ export async function getInvoices() {
     })
         .from(invoices)
         .leftJoin(projects, eq(invoices.projectId, projects.id))
-        .where(eq(invoices.userId, session.user.id))
+        .where(eq(invoices.userId, DUMMY_USER_ID))
         .orderBy(desc(invoices.createdAt));
 
     return data.map(i => ({
@@ -75,11 +68,8 @@ export async function getInvoices() {
 }
 
 export async function getInspections() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select().from(inspections)
-        .where(eq(inspections.userId, session.user.id))
+        .where(eq(inspections.userId, DUMMY_USER_ID))
         .orderBy(desc(inspections.createdAt));
 
     return data.map(i => ({
@@ -90,15 +80,12 @@ export async function getInspections() {
 }
 
 export async function getMessages() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     // Fetch conversation where user is either sender or receiver
     const data = await db.select().from(messages)
         .where(
             or(
-                eq(messages.receiverId, session.user.id),
-                eq(messages.senderId, session.user.id)
+                eq(messages.receiverId, DUMMY_USER_ID),
+                eq(messages.senderId, DUMMY_USER_ID)
             )
         )
         // Fetch ordered by time ascending (oldest first for chat UI)
@@ -113,15 +100,12 @@ export async function getMessages() {
 }
 
 export async function sendMessage(content: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     // Find an admin to receive the message (fallback as in original code)
     const adminData = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.role, 'admin')).limit(1);
     const receiverId = adminData[0]?.id || '00000000-0000-0000-0000-000000000000';
 
     await db.insert(messages).values({
-        senderId: session.user.id,
+        senderId: DUMMY_USER_ID,
         receiverId,
         content,
         read: false
@@ -129,9 +113,6 @@ export async function sendMessage(content: string) {
 }
 
 export async function getDocuments() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select({
         id: documentShares.id,
         createdAt: documentShares.createdAt,
@@ -150,7 +131,7 @@ export async function getDocuments() {
         .from(documentShares)
         .innerJoin(documents, eq(documentShares.documentId, documents.id))
         .leftJoin(projects, eq(documentShares.projectId, projects.id))
-        .where(eq(documentShares.userId, session.user.id))
+        .where(eq(documentShares.userId, DUMMY_USER_ID))
         .orderBy(desc(documentShares.createdAt));
 
     return data.map(d => ({
@@ -165,17 +146,12 @@ export async function getDocuments() {
 }
 
 export async function updatePassword(newPassword: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await db.update(users).set({ passwordHash: hashedPassword }).where(eq(users.id, session.user.id));
+    // No-op or throw error since auth is removed
+    console.log("Password update requested for dummy user, ignoring.");
+    return;
 }
 
 export async function getSharedPhotos() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     // Drizzle inner join
     const data = await db.select({
         id: documentShares.id,
@@ -188,7 +164,7 @@ export async function getSharedPhotos() {
     })
         .from(documentShares)
         .innerJoin(documents, eq(documentShares.documentId, documents.id))
-        .where(eq(documentShares.userId, session.user.id));
+        .where(eq(documentShares.userId, DUMMY_USER_ID));
 
     // Filter only images (as per original logic)
     return data.filter(d => d.documents.mimeType?.startsWith('image/'));
@@ -197,41 +173,29 @@ export async function getSharedPhotos() {
 import { put } from '@vercel/blob';
 
 export async function getProfile() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
-    const data = await db.select().from(profiles).where(eq(profiles.id, session.user.id)).limit(1);
+    const data = await db.select().from(profiles).where(eq(profiles.id, DUMMY_USER_ID)).limit(1);
     return data[0] || null;
 }
 
 export async function updateProfile(updateData: { fullName?: string | null, phone?: string | null, address?: string | null }) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     await db.update(profiles)
         .set(updateData)
-        .where(eq(profiles.id, session.user.id));
+        .where(eq(profiles.id, DUMMY_USER_ID));
 }
 
 export async function uploadAvatar(formData: FormData) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const file = formData.get('file') as File;
     if (!file) throw new Error('No file provided');
 
-    const blob = await put(`avatars/${session.user.id}/${file.name}`, file, {
+    const blob = await put(`avatars/${DUMMY_USER_ID}/${file.name}`, file, {
         access: 'public',
     });
 
-    await db.update(profiles).set({ avatarUrl: blob.url }).where(eq(profiles.id, session.user.id));
+    await db.update(profiles).set({ avatarUrl: blob.url }).where(eq(profiles.id, DUMMY_USER_ID));
     return blob.url;
 }
 
 export async function getAdminProfiles() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select({
         id: profiles.id,
         full_name: profiles.fullName,
@@ -242,9 +206,6 @@ export async function getAdminProfiles() {
 }
 
 export async function getAdminCustomers() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select({
         id: users.id,
         email: users.email,
@@ -271,16 +232,13 @@ export async function createAdminCustomer(data: {
     phone?: string;
     role?: string;
 }) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
 
     const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, data.email)).limit(1);
     if (existing.length > 0) return { error: 'Email already in use' };
 
-    const hashedPassword = await bcrypt.hash(data.password, 12);
     const userId = uuidv4();
 
-    await db.insert(users).values({ id: userId, email: data.email, passwordHash: hashedPassword });
+    await db.insert(users).values({ id: userId, email: data.email });
     await db.insert(profiles).values({
         id: userId,
         fullName: data.fullName,
@@ -292,30 +250,22 @@ export async function createAdminCustomer(data: {
 }
 
 export async function updateCustomerRole(userId: string, role: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
     await db.update(profiles).set({ role }).where(eq(profiles.id, userId));
 }
 
 export async function deleteCustomer(userId: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
     // Cascade deletes profile too (FK ON DELETE CASCADE)
     await db.delete(users).where(eq(users.id, userId));
 }
 
 export async function resetCustomerPassword(userId: string, newPassword: string) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-    await db.update(users).set({ passwordHash: hashedPassword }).where(eq(users.id, userId));
+    // No-op
+    console.log("Password reset requested for dummy user, ignoring.");
+    return;
 }
 
 
 export async function getAdminProjects() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const data = await db.select({
         id: projects.id,
         title: projects.title,
@@ -326,9 +276,6 @@ export async function getAdminProjects() {
 }
 
 export async function uploadAdminDocument(formData: FormData) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const file = formData.get('file') as File;
     const userId = formData.get('userId') as string;
     const projectId = formData.get('projectId') as string;
@@ -347,7 +294,7 @@ export async function uploadAdminDocument(formData: FormData) {
         storageKey: blob.url, // In Vercel Blob, URL can serve as key
         mimeType: file.type,
         size: file.size,
-        uploadedBy: session.user.id
+        uploadedBy: DUMMY_USER_ID
     }).returning();
 
     // 3. Create share record
@@ -366,15 +313,12 @@ export async function bookInspection(data: {
     preferred_date: string;
     description: string;
 }) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const profile = await getProfile();
 
     await db.insert(inspections).values({
-        userId: session.user.id,
+        userId: DUMMY_USER_ID,
         name: profile?.fullName || 'Unnamed Customer',
-        email: session.user.email || '',
+        email: DUMMY_USER_EMAIL,
         address: data.address,
         propertyType: data.property_type,
         preferredDate: data.preferred_date,
@@ -386,13 +330,10 @@ export async function bookInspection(data: {
 }
 
 export async function getDashboardStats() {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Unauthorized');
-
     const [p, q, i] = await Promise.all([
-        db.select({ status: projects.status }).from(projects).where(eq(projects.userId, session.user.id)),
-        db.select({ status: quotes.status }).from(quotes).where(eq(quotes.userId, session.user.id)),
-        db.select({ preferredDate: inspections.preferredDate }).from(inspections).where(eq(inspections.userId, session.user.id)).orderBy(inspections.preferredDate)
+        db.select({ status: projects.status }).from(projects).where(eq(projects.userId, DUMMY_USER_ID)),
+        db.select({ status: quotes.status }).from(quotes).where(eq(quotes.userId, DUMMY_USER_ID)),
+        db.select({ preferredDate: inspections.preferredDate }).from(inspections).where(eq(inspections.userId, DUMMY_USER_ID)).orderBy(inspections.preferredDate)
     ]);
 
     const stats = {
@@ -411,14 +352,12 @@ export async function registerUser(email: string, password: string, name: string
     const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existingUser.length > 0) return { error: 'Email already in use' };
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuidv4();
 
     try {
         await db.insert(users).values({
             id: userId,
             email,
-            passwordHash: hashedPassword,
         });
 
         await db.insert(profiles).values({

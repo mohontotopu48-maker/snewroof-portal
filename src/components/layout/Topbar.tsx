@@ -1,13 +1,15 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
+
 import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 
 export function Topbar() {
-    const { user, isAdmin, signOut } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User', avatarUrl: null as string | null };
+    const isAdmin = true;
+    const signOut = () => { window.location.href = '/' };
     const [showDropdown, setShowDropdown] = useState(false);
 
     const initials = user?.name
@@ -95,8 +97,8 @@ export function Topbar() {
                                     Admin Panel
                                 </Link>
                             )}
-                            <div 
-                                className="dropdown-item" 
+                            <div
+                                className="dropdown-item"
                                 style={{ color: '#f87171', cursor: 'pointer' }}
                                 onClick={() => {
                                     setShowDropdown(false);

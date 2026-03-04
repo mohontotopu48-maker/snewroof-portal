@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+
 import {
     LayoutDashboard, CalendarCheck, FileText, HardHat,
     Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck, Users
@@ -22,16 +22,16 @@ const navItems = [
 export function CustomerSidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { user, signOut } = useAuth();
+    const user = { email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [mobileOpen, setMobileOpen] = useState(false);
+    const signOut = async () => { };
 
     const handleSignOut = async () => {
-        await signOut();
-        router.push('/login');
+        router.push('/');
     };
 
     const initials = user?.name
-        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : user?.email?.[0]?.toUpperCase() || 'U';
 
     const sidebarContent = (

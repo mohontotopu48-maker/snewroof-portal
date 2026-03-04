@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FileText, Download, Eye, Filter, Search, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 
 
 interface Quote {
@@ -18,7 +18,7 @@ interface Quote {
 import { getQuotes } from '@/app/actions';
 
 export default function QuotesPage() {
-    const { user } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

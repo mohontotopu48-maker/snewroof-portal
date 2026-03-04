@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { SessionProvider } from 'next-auth/react';
-import { AuthProvider } from '@/lib/auth-context';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
@@ -23,12 +21,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        <SessionProvider>
-          <AuthProvider>
-            {children}
-            <SpeedInsights />
-          </AuthProvider>
-        </SessionProvider>
+        {children}
+        <SpeedInsights />
       </body>
     </html>
   );

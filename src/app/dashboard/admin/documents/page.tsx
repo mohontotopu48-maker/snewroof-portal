@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Upload, File, FileText, ImageIcon, User, HardHat, Send, CheckCircle2, AlertCircle, Search } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 import { getAdminProfiles, getAdminProjects, uploadAdminDocument } from '@/app/actions';
 
 interface Profile {
@@ -18,7 +18,7 @@ interface Project {
 }
 
 export default function AdminDocumentsPage() {
-    const { isAdmin } = useAuth();
+    const isAdmin = true;
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>('');

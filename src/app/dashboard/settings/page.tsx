@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { User, Mail, Shield, Lock, Save, Camera, Globe, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+
 import Image from 'next/image';
 
 
@@ -18,7 +18,8 @@ interface Profile {
 import { getProfile, updateProfile, uploadAvatar } from '@/app/actions';
 
 export default function SettingsPage() {
-    const { user, refreshProfile } = useAuth();
+    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
+    const refreshProfile = async () => { doFetchProfile() };
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);

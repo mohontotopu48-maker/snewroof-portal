@@ -13,7 +13,8 @@ import {
 export const users = pgTable('users', {
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').unique().notNull(),
-    passwordHash: text('password_hash').notNull(),
+    passwordHash: text('password_hash'),
+    vercelUserId: text('vercel_user_id').unique(),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow()
 });
