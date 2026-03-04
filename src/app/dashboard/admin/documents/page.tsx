@@ -3,22 +3,22 @@
 import { useState, useEffect } from 'react';
 import { Upload, File, FileText, ImageIcon, User, HardHat, Send, CheckCircle2, AlertCircle, Search } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import insforge from '@/lib/insforge';
+import { getAdminProfiles, getAdminProjects, uploadAdminDocument } from '@/app/actions';
 
 interface Profile {
     id: string;
-    full_name: string;
+    full_name: string | null;
     role: string;
 }
 
 interface Project {
     id: string;
     title: string;
-    user_id: string;
+    user_id: string | null;
 }
 
 export default function AdminDocumentsPage() {
-    const { user, isAdmin } = useAuth();
+    const { isAdmin } = useAuth();
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>('');
@@ -31,8 +31,8 @@ export default function AdminDocumentsPage() {
         if (!isAdmin) return;
 
         const fetchData = async () => {
-            const { data: profs } = await insforge.database.from('profiles').select('id, full_name, role');
-            const { data: projs } = await insforge.database.from('projects').select('id, title, user_id');
+            const profs = await getAdminProfiles();
+            const projs = await getAdminProjects();
             if (profs) setProfiles(profs);
             if (projs) setProjects(projs);
         };
@@ -51,39 +51,12 @@ export default function AdminDocumentsPage() {
         setStatus(null);
 
         try {
-            // 1. Upload to storage
-            const { data: storageData, error: storageError } = await insforge.storage
-                .from('documents')
-                .uploadAuto(file);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('userId', selectedUser);
+            formData.append('projectId', selectedProject);
 
-            if (storageError || !storageData) throw storageError || new Error('Upload failed');
-
-            // 2. Create document record
-            const { data: docData, error: docError } = await insforge.database
-                .from('documents')
-                .insert([{
-                    name: file.name,
-                    url: storageData.url,
-                    storage_key: storageData.key,
-                    mime_type: file.type,
-                    size: file.size,
-                    uploaded_by: user?.id
-                }])
-                .select()
-                .single();
-
-            if (docError) throw docError;
-
-            // 3. Create share record
-            const { error: shareError } = await insforge.database
-                .from('document_shares')
-                .insert([{
-                    document_id: docData.id,
-                    user_id: selectedUser,
-                    project_id: selectedProject || null
-                }]);
-
-            if (shareError) throw shareError;
+            await uploadAdminDocument(formData);
 
             setStatus({ type: 'success', msg: 'File transferred successfully to customer portal!' });
             setFile(null);

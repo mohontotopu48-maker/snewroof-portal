@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Receipt, Download, CreditCard, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import insforge from '@/lib/insforge';
 
 interface Invoice {
     id: string;

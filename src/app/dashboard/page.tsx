@@ -6,7 +6,6 @@ import {
     HardHat, FileText,
     Calendar, CheckCircle, Clock, Loader2
 } from 'lucide-react';
-import insforge from '@/lib/insforge';
 
 interface DashboardStats {
     activeProjects: number;

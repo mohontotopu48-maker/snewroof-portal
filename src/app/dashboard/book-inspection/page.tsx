@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, MessageSquare, ShieldCheck, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import insforge from '@/lib/insforge';
+import { bookInspection } from '@/app/actions';
 
 export default function BookInspectionPage() {
     const { user } = useAuth();
@@ -27,20 +27,12 @@ export default function BookInspectionPage() {
         setError(null);
 
         try {
-            const { error: insertError } = await insforge.database
-                .from('inspections')
-                .insert([{
-                    user_id: user.id,
-                    name: user.name || 'Unnamed Customer',
-                    email: user.email,
-                    address: formData.address,
-                    property_type: 'residential', // default
-                    preferred_date: formData.preferred_date,
-                    description: `${formData.type}. Time Window: ${formData.preferred_time}. ${formData.description}`,
-                    status: 'pending'
-                }]);
-
-            if (insertError) throw insertError;
+            await bookInspection({
+                address: formData.address,
+                property_type: 'residential',
+                preferred_date: formData.preferred_date,
+                description: `${formData.type}. Time Window: ${formData.preferred_time}. ${formData.description}`
+            });
 
             setSuccess(true);
         } catch (err) {

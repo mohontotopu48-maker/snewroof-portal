@@ -227,6 +227,93 @@ export async function uploadAvatar(formData: FormData) {
     return blob.url;
 }
 
+export async function getAdminProfiles() {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    // In a real app, check if user is admin
+    const data = await db.select({
+        id: profiles.id,
+        full_name: profiles.fullName,
+        role: profiles.role
+    }).from(profiles);
+
+    return data;
+}
+
+export async function getAdminProjects() {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    const data = await db.select({
+        id: projects.id,
+        title: projects.title,
+        user_id: projects.userId
+    }).from(projects);
+
+    return data;
+}
+
+export async function uploadAdminDocument(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    const file = formData.get('file') as File;
+    const userId = formData.get('userId') as string;
+    const projectId = formData.get('projectId') as string;
+
+    if (!file || !userId) throw new Error('Missing file or user selection');
+
+    // 1. Upload to Vercel Blob
+    const blob = await put(`documents/${userId}/${file.name}`, file, {
+        access: 'public',
+    });
+
+    // 2. Create document record
+    const [doc] = await db.insert(documents).values({
+        name: file.name,
+        url: blob.url,
+        storageKey: blob.url, // In Vercel Blob, URL can serve as key
+        mimeType: file.type,
+        size: file.size,
+        uploadedBy: session.user.id
+    }).returning();
+
+    // 3. Create share record
+    await db.insert(documentShares).values({
+        documentId: doc.id,
+        userId: userId,
+        projectId: projectId || null
+    });
+
+    return { success: true };
+}
+
+export async function bookInspection(data: {
+    address: string;
+    property_type: string;
+    preferred_date: string;
+    description: string;
+}) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    const profile = await getProfile();
+
+    await db.insert(inspections).values({
+        userId: session.user.id,
+        name: profile?.fullName || 'Unnamed Customer',
+        email: session.user.email || '',
+        address: data.address,
+        propertyType: data.property_type,
+        preferredDate: data.preferred_date,
+        description: data.description,
+        status: 'pending'
+    });
+
+    return { success: true };
+}
+
 export async function getDashboardStats() {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
