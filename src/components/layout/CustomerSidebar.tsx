@@ -24,7 +24,7 @@ export function CustomerSidebar() {
     const router = useRouter();
     const user = { email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [mobileOpen, setMobileOpen] = useState(false);
-    const signOut = async () => { };
+
 
     const handleSignOut = async () => {
         router.push('/');

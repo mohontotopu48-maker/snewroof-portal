@@ -2,12 +2,12 @@
 
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { CustomerSidebar } from '@/components/layout/CustomerSidebar';
 import { Topbar } from '@/components/layout/Topbar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
+    const user = useMemo(() => ({ id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' }), []);
     const loading = false;
     const router = useRouter();
 

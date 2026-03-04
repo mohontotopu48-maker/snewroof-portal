@@ -145,7 +145,7 @@ export async function getDocuments() {
     }));
 }
 
-export async function updatePassword(newPassword: string) {
+export async function updatePassword(_newPassword: string) {
     // No-op or throw error since auth is removed
     console.log("Password update requested for dummy user, ignoring.");
     return;
@@ -258,7 +258,7 @@ export async function deleteCustomer(userId: string) {
     await db.delete(users).where(eq(users.id, userId));
 }
 
-export async function resetCustomerPassword(userId: string, newPassword: string) {
+export async function resetCustomerPassword(_userId: string, _newPassword: string) {
     // No-op
     console.log("Password reset requested for dummy user, ignoring.");
     return;

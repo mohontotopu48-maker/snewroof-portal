@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FileText, ImageIcon, Download, Eye, HardHat, Search, Filter, X, ExternalLink, File as FileIcon } from 'lucide-react';
 
 import { getDocuments } from '@/app/actions';
@@ -22,7 +22,7 @@ interface SharedDocument {
 }
 
 export default function DocumentsPage() {
-    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
+    const user = useMemo(() => ({ id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User' }), []);
     const [docs, setDocs] = useState<SharedDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [previewDoc, setPreviewDoc] = useState<SharedDocument | null>(null);
