@@ -1,7 +1,9 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { quotes, projects, invoices, inspections, messages, documentShares, documents, profiles } from '@/db/schema';
+import { quotes, projects, invoices, inspections, messages, documentShares, documents, profiles, users } from '@/db/schema';
+import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import { eq, desc, or } from 'drizzle-orm';
 import { auth } from '@/auth';
 
@@ -230,7 +232,6 @@ export async function getAdminProfiles() {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 
-    // In a real app, check if user is admin
     const data = await db.select({
         id: profiles.id,
         full_name: profiles.fullName,
@@ -239,6 +240,77 @@ export async function getAdminProfiles() {
 
     return data;
 }
+
+export async function getAdminCustomers() {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    const data = await db.select({
+        id: users.id,
+        email: users.email,
+        createdAt: users.createdAt,
+        fullName: profiles.fullName,
+        phone: profiles.phone,
+        role: profiles.role,
+        avatarUrl: profiles.avatarUrl,
+    })
+        .from(users)
+        .leftJoin(profiles, eq(profiles.id, users.id))
+        .orderBy(desc(users.createdAt));
+
+    return data.map(u => ({
+        ...u,
+        createdAt: u.createdAt?.toISOString() || '',
+    }));
+}
+
+export async function createAdminCustomer(data: {
+    email: string;
+    password: string;
+    fullName: string;
+    phone?: string;
+    role?: string;
+}) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, data.email)).limit(1);
+    if (existing.length > 0) return { error: 'Email already in use' };
+
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+    const userId = uuidv4();
+
+    await db.insert(users).values({ id: userId, email: data.email, passwordHash: hashedPassword });
+    await db.insert(profiles).values({
+        id: userId,
+        fullName: data.fullName,
+        phone: data.phone || null,
+        role: data.role || 'customer',
+    });
+
+    return { error: null, id: userId };
+}
+
+export async function updateCustomerRole(userId: string, role: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+    await db.update(profiles).set({ role }).where(eq(profiles.id, userId));
+}
+
+export async function deleteCustomer(userId: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+    // Cascade deletes profile too (FK ON DELETE CASCADE)
+    await db.delete(users).where(eq(users.id, userId));
+}
+
+export async function resetCustomerPassword(userId: string, newPassword: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error('Unauthorized');
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await db.update(users).set({ passwordHash: hashedPassword }).where(eq(users.id, userId));
+}
+
 
 export async function getAdminProjects() {
     const session = await auth();
@@ -332,9 +404,7 @@ export async function getDashboardStats() {
     return stats;
 }
 
-import bcrypt from 'bcryptjs';
-import { users } from '@/db/schema';
-import { v4 as uuidv4 } from 'uuid';
+
 
 export async function registerUser(email: string, password: string, name: string) {
     // Check if user exists

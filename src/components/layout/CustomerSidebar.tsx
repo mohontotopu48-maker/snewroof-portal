@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import {
     LayoutDashboard, CalendarCheck, FileText, HardHat,
-    Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck
+    Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck, Users
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -133,10 +133,17 @@ export function CustomerSidebar() {
                     Settings
                 </Link>
                 {user?.role === 'admin' && (
-                    <Link href="/dashboard/admin/documents" className={`nav-link ${pathname === '/dashboard/admin/documents' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
-                        <ShieldCheck size={18} />
-                        Admin Portal
-                    </Link>
+                    <>
+                        <div className="nav-label" style={{ marginTop: 8 }}>Admin</div>
+                        <Link href="/dashboard/admin/customers" className={`nav-link ${pathname.startsWith('/dashboard/admin/customers') ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <Users size={18} />
+                            Customers
+                        </Link>
+                        <Link href="/dashboard/admin/documents" className={`nav-link ${pathname === '/dashboard/admin/documents' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <ShieldCheck size={18} />
+                            Doc Transfer
+                        </Link>
+                    </>
                 )}
                 <button className="nav-link" onClick={handleSignOut} style={{ cursor: 'pointer', color: '#f87171' }}>
                     <LogOut size={18} />
