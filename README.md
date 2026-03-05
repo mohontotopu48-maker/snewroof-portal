@@ -31,6 +31,9 @@ To trigger a workflow, you can use the `trigger` method from `@workflow/next`.
 
 ## Development with Vercel Sandbox
 
+<!-- Trigger build -->
+
+
 This project is configured to work with [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox). You can run the development server, build, or admin scripts in an isolated Node 24 environment using the following commands:
 
 - **Run Dev Server in Sandbox:** `npm run sandbox:dev`
