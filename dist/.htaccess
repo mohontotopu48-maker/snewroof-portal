@@ -1,0 +1,8 @@
+# Redirect all traffic to live Vercel portal
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(.*)$ https://snewroof-portal.vercel.app/$1 [R=301,L]
+</IfModule>
+
+# Fallback if mod_rewrite not available
+ErrorDocument 404 /index.html

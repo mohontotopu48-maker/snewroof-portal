@@ -42,9 +42,10 @@ export default function DashboardClient({ userName }: { userName: string }) {
             const completedJobs = data.completedJobs;
             const pendingQuotes = data.pendingQuotes;
 
-            const upcomingInspection = data.inspections.find(
-                (i: { preferred_date?: string }) => i.preferred_date && new Date(i.preferred_date) >= new Date()
-            )?.preferred_date;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const upcomingInspection = (data.inspections as any[]).find(
+                (i) => i.preferred_date && new Date(i.preferred_date) >= new Date()
+            )?.preferred_date as string | undefined;
             const nextInspection = upcomingInspection
                 ? new Date(upcomingInspection).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                 : 'TBD';
