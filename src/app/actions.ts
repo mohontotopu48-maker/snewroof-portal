@@ -498,3 +498,61 @@ export async function deleteResource(id: string) {
     if (error) throw error;
     return { success: true };
 }
+
+// -------------------------------------------------------------
+// NEW ADMIN CRUD FUNCTIONS
+// -------------------------------------------------------------
+
+export async function getAdminMessages() {
+    const { data, error } = await insforge.database
+        .from('messages')
+        .select('*, sender:profiles!sender_id(full_name, avatar_url), receiver:profiles!receiver_id(full_name, avatar_url)')
+        .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data || [];
+}
+
+export async function sendAdminMessage(receiverId: string, content: string) {
+    const adminId = await getUserId();
+    if (!adminId) throw new Error('Not authenticated');
+
+    // Check if receiverId is a valid UUID, otherwise find a valid admin or user
+    // In our live test we explicitly want admins to answer.
+    await insforge.database.from('messages').insert({ sender_id: adminId, receiver_id: receiverId, content, read: false });
+}
+
+export async function getAdminProjectsAll() {
+    const { data, error } = await insforge.database.from('projects').select('*, profiles!user_id(full_name)').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+export async function createAdminProject(data: any) { await insforge.database.from('projects').insert(data); }
+export async function updateAdminProject(id: string, data: any) { await insforge.database.from('projects').update(data).eq('id', id); }
+export async function deleteAdminProject(id: string) { await insforge.database.from('projects').delete().eq('id', id); }
+
+export async function getAdminQuotes() {
+    const { data, error } = await insforge.database.from('quotes').select('*, profiles!user_id(full_name)').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+export async function createAdminQuote(data: any) { await insforge.database.from('quotes').insert(data); }
+export async function updateAdminQuote(id: string, data: any) { await insforge.database.from('quotes').update(data).eq('id', id); }
+export async function deleteAdminQuote(id: string) { await insforge.database.from('quotes').delete().eq('id', id); }
+
+export async function getAdminInvoices() {
+    const { data, error } = await insforge.database.from('invoices').select('*, profiles!user_id(full_name), projects(title)').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+export async function createAdminInvoice(data: any) { await insforge.database.from('invoices').insert(data); }
+export async function updateAdminInvoice(id: string, data: any) { await insforge.database.from('invoices').update(data).eq('id', id); }
+export async function deleteAdminInvoice(id: string) { await insforge.database.from('invoices').delete().eq('id', id); }
+
+export async function getAdminInspectionsAll() {
+    const { data, error } = await insforge.database.from('inspections').select('*, profiles!user_id(full_name)').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+export async function deleteAdminInspection(id: string) { await insforge.database.from('inspections').delete().eq('id', id); }
+export async function updateAdminInspection(id: string, data: any) { await insforge.database.from('inspections').update(data).eq('id', id); }
+

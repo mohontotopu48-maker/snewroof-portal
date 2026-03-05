@@ -18,7 +18,9 @@ const navItems = [
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/resources', icon: FolderOpen, label: 'Resources' },
     { href: '/dashboard/invoices', icon: Receipt, label: 'Invoices' },
+    { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
     { href: 'https://wa.me/17147704756', icon: MessageCircle, label: 'WhatsApp', external: true },
+    { href: 'sms:17147704756', icon: MessageCircle, label: 'SMS Us', external: true },
 ];
 
 export function CustomerSidebar({ user }: { user: { email: string, role: string, name: string | null } }) {
@@ -147,18 +149,30 @@ export function CustomerSidebar({ user }: { user: { email: string, role: string,
                 </Link>
                 {user?.role === 'admin' && (
                     <>
-                        <div className="nav-label" style={{ marginTop: 8 }}>Admin</div>
+                        <div className="nav-label" style={{ marginTop: 8 }}>Admin Management</div>
+                        <Link href="/dashboard/admin/projects" className={`nav-link ${pathname === '/dashboard/admin/projects' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <HardHat size={18} /> Projects
+                        </Link>
+                        <Link href="/dashboard/admin/quotes" className={`nav-link ${pathname === '/dashboard/admin/quotes' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <FileText size={18} /> Quotes
+                        </Link>
+                        <Link href="/dashboard/admin/invoices" className={`nav-link ${pathname === '/dashboard/admin/invoices' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <Receipt size={18} /> Invoices
+                        </Link>
+                        <Link href="/dashboard/admin/inspections" className={`nav-link ${pathname === '/dashboard/admin/inspections' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <CalendarCheck size={18} /> Inspections
+                        </Link>
+                        <Link href="/dashboard/admin/messages" className={`nav-link ${pathname === '/dashboard/admin/messages' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <MessageCircle size={18} /> Messages
+                        </Link>
                         <Link href="/dashboard/admin/customers" className={`nav-link ${pathname.startsWith('/dashboard/admin/customers') ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
-                            <Users size={18} />
-                            Customers
+                            <Users size={18} /> Customers
                         </Link>
                         <Link href="/dashboard/admin/documents" className={`nav-link ${pathname === '/dashboard/admin/documents' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
-                            <ShieldCheck size={18} />
-                            Doc Transfer
+                            <ShieldCheck size={18} /> Doc Transfer
                         </Link>
                         <Link href="/dashboard/admin/resources" className={`nav-link ${pathname === '/dashboard/admin/resources' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
-                            <FolderOpen size={18} />
-                            Add Resources
+                            <FolderOpen size={18} /> Add Resources
                         </Link>
                     </>
                 )}

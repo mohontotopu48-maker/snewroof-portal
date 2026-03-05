@@ -1,0 +1,10 @@
+Seeding Live Authentication Users...
+file:///C:/Users/UseR/.gemini/antigravity/scratch/snewroof-portal/scripts/seed_users.mjs:23
+        const { data: { user }, error } = await supabase.auth.signUp({
+                        ^
+
+TypeError: Cannot read properties of null (reading 'user')
+    at main (file:///C:/Users/UseR/.gemini/antigravity/scratch/snewroof-portal/scripts/seed_users.mjs:23:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+Node.js v24.13.0

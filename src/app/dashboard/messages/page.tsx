@@ -72,8 +72,8 @@ export default function MessagesPage() {
     return (
         <div className="animate-fade" style={{ height: 'calc(100vh - var(--topbar-h) - 64px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 20 }}>
-                <h2>Messages</h2>
-                <p>Chat directly with your project manager and support team.</p>
+                <h2>Message Center</h2>
+                <p>Chat directly with the <strong style={{ color: 'var(--orange-400)' }}>Snewroof Admin Team</strong>. Send a note to explicitly notify the admin team of any changes.</p>
             </div>
 
             <div className="card" style={{ flex: 1, display: 'flex', padding: 0, overflow: 'hidden' }}>
@@ -85,9 +85,9 @@ export default function MessagesPage() {
                         background: 'rgba(255,255,255,0.02)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div className="avatar" style={{ background: 'var(--orange-500)' }}>S</div>
+                            <div className="avatar" style={{ background: 'var(--orange-500)' }}>SA</div>
                             <div>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>Snewroof Support</div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>Snewroof Admin Team</div>
                                 <div style={{ fontSize: 11, color: 'var(--success)', display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />
                                     Online
@@ -138,7 +138,7 @@ export default function MessagesPage() {
                             <input
                                 type="text"
                                 className="form-input"
-                                placeholder="Type your message..."
+                                placeholder="Type a note to notify the Admin..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 style={{ flex: 1 }}
