@@ -174,6 +174,10 @@ export function CustomerSidebar({ user }: { user: { email: string, role: string,
                         <Link href="/dashboard/admin/resources" className={`nav-link ${pathname === '/dashboard/admin/resources' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
                             <FolderOpen size={18} /> Add Resources
                         </Link>
+                        <div className="nav-label" style={{ marginTop: 8 }}>GEO Controls</div>
+                        <Link href="/dashboard/admin/settings" className={`nav-link ${pathname === '/dashboard/admin/settings' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: '#a78bfa', fontWeight: 600 }}>
+                            <Settings size={18} /> Portal Settings
+                        </Link>
                     </>
                 )}
                 <button className="nav-link" onClick={handleSignOut} style={{ cursor: 'pointer', color: '#f87171' }}>

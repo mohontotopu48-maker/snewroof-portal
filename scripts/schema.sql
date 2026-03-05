@@ -254,4 +254,13 @@ DROP TRIGGER IF EXISTS trg_project_update ON public.projects;
 CREATE TRIGGER trg_project_update AFTER UPDATE ON public.projects
     FOR EACH ROW EXECUTE FUNCTION public.notify_on_project_update();
 
+-- TABLE: portal_settings
+CREATE TABLE IF NOT EXISTS public.portal_settings (
+    id                  TEXT PRIMARY KEY DEFAULT 'global',
+    ghl_script          TEXT,
+    analytics_script    TEXT,
+    custom_css          TEXT,
+    updated_at          TIMESTAMPTZ DEFAULT now()
+);
+
 -- END OF MIGRATION

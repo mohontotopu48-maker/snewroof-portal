@@ -556,3 +556,27 @@ export async function getAdminInspectionsAll() {
 export async function deleteAdminInspection(id: string) { await insforge.database.from('inspections').delete().eq('id', id); }
 export async function updateAdminInspection(id: string, data: any) { await insforge.database.from('inspections').update(data).eq('id', id); }
 
+export async function getGlobalSettings() {
+    const { data, error } = await insforge.database.from('portal_settings').select('*').eq('id', 'global').single();
+    if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned". If error is something else, throw it.
+        throw error;
+    }
+    return data || { ghl_script: '', analytics_script: '', custom_css: '' };
+}
+
+export async function updateGlobalSettings(data: { ghl_script?: string, analytics_script?: string, custom_css?: string }) {
+    const adminId = await getUserId();
+    if (!adminId) throw new Error('Not authenticated');
+
+    const profile = await getProfile();
+    if (profile?.role !== 'admin') throw new Error('Not authorized to update global settings');
+
+    const { error } = await insforge.database
+        .from('portal_settings')
+        .upsert({ id: 'global', ...data, updated_at: new Date().toISOString() });
+
+    if (error) throw error;
+    return { success: true };
+}
+

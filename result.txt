@@ -1,0 +1,14 @@
+[dotenv@17.3.1] injecting env (2) from .env.local -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
+Verifying users...
+
+Testing geovsualdm@gmail.com... Γ£à Login OK.
+Testing info.vsualdm@gmail.com... Γ£à Login OK.
+Testing info@snewroof.com... Γ£à Login OK.
+Testing mohontotopu48@gmail.com... Γ£à Login OK.
+Testing marisnewroof2023@gmail.com... Γ£à Login OK.
+Testing tomvuong@snewroof.com... Γ¥î Login FAILED: Email verification required
+   Attempting to recreate via signup... Γ¥î Could not create. Reason: User already exists
+Testing brett@snewroof.com... Γ£à Login OK.
+Testing lorraine@snewroof.com... Γ£à Login OK.
+
+Done.
