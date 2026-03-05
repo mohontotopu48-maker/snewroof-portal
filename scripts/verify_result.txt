@@ -1,0 +1,13 @@
+[dotenv@17.3.1] injecting env (2) from .env.local -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+=== Final Portal User Verification ===
+
+[ADMIN   ] geovsualdm@gmail.com                ΓåÆ Testing login... Γ£à OK (name="GEO", role="admin")
+[ADMIN   ] info.vsualdm@gmail.com              ΓåÆ Testing login... Γ£à OK (name="SAL", role="admin")
+[ADMIN   ] info@snewroof.com                   ΓåÆ Testing login... Γ£à OK (name="SAM", role="admin")
+[ADMIN   ] mohontotopu48@gmail.com             ΓåÆ Testing login... Γ£à OK (name="Topu", role="admin")
+[TEAM    ] marisnewroof2023@gmail.com          ΓåÆ Testing login... Γ£à OK (name="Maria", role="team")
+[CUSTOMER] tom@snewroof.com                    ΓåÆ Testing login... Γ£à OK (name="Tom Vuong", role="customer")
+[CUSTOMER] brett@snewroof.com                  ΓåÆ Testing login... Γ£à OK (name="Brett", role="customer")
+[CUSTOMER] lorraine@snewroof.com               ΓåÆ Testing login... Γ£à OK (name="Lorraine", role="customer")
+
+=== Γ£à ALL USERS VERIFIED ===
