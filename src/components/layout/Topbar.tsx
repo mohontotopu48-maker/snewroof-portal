@@ -5,11 +5,11 @@ import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { logoutUser } from '@/lib/auth-actions';
 
-export function Topbar() {
-    const user = { id: '00000000-0000-0000-0000-000000000001', email: 'customer@example.com', role: 'admin', name: 'Dummy User', avatarUrl: null as string | null };
-    const isAdmin = true;
-    const signOut = () => { window.location.href = '/' };
+export function Topbar({ user }: { user: { id: string, email: string, role: string, name: string | null, avatarUrl?: string | null } }) {
+    const isAdmin = user.role === 'admin';
+    const signOut = async () => { await logoutUser(); };
     const [showDropdown, setShowDropdown] = useState(false);
 
     const initials = user?.name

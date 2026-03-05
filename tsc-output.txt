@@ -1,8 +1,0 @@
-.next/dev/types/validator.ts(134,39): error TS2307: Cannot find module '../../../src/app/forgot-password/page.js' or its corresponding type declarations.
-.next/dev/types/validator.ts(143,39): error TS2307: Cannot find module '../../../src/app/login/page.js' or its corresponding type declarations.
-.next/dev/types/validator.ts(161,39): error TS2307: Cannot find module '../../../src/app/reset-password/page.js' or its corresponding type declarations.
-.next/dev/types/validator.ts(170,39): error TS2307: Cannot find module '../../../src/app/api/auth/[...nextauth]/route.js' or its corresponding type declarations.
-src/app/dashboard/admin/customers/page.tsx(27,25): error TS2304: Cannot find name 'useAuth'.
-src/app/dashboard/admin/documents/page.tsx(21,25): error TS2304: Cannot find name 'useAuth'.
-src/components/layout/CustomerSidebar.tsx(25,31): error TS2304: Cannot find name 'useAuth'.
-src/components/layout/CustomerSidebar.tsx(34,36): error TS7006: Parameter 'n' implicitly has an 'any' type.

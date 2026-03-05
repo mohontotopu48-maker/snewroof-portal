@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { insforge } from '@/lib/insforge';
 import { v4 as uuidv4 } from 'uuid';
-
-const DUMMY_USER_ID = '00000000-0000-0000-0000-000000000001';
-const DUMMY_USER_EMAIL = 'customer@example.com';
+import { getUserId } from '@/lib/auth-actions';
 
 export async function getQuotes() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('quotes')
         .select()
-        .eq('user_id', DUMMY_USER_ID)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -23,10 +25,13 @@ export async function getQuotes() {
 }
 
 export async function getProjects() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('projects')
         .select()
-        .eq('user_id', DUMMY_USER_ID)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -39,11 +44,14 @@ export async function getProjects() {
 }
 
 export async function getInvoices() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     // InsForge supports JOINs using table syntax
     const { data, error } = await insforge.database
         .from('invoices')
         .select('*, projects(title)')
-        .eq('user_id', DUMMY_USER_ID)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -63,10 +71,13 @@ export async function getInvoices() {
 }
 
 export async function getInspections() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('inspections')
         .select()
-        .eq('user_id', DUMMY_USER_ID)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -79,10 +90,13 @@ export async function getInspections() {
 }
 
 export async function getMessages() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('messages')
         .select()
-        .or(`receiver_id.eq.${DUMMY_USER_ID},sender_id.eq.${DUMMY_USER_ID}`)
+        .or(`receiver_id.eq.${userId},sender_id.eq.${userId}`)
         .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -96,6 +110,9 @@ export async function getMessages() {
 }
 
 export async function sendMessage(content: string) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
     const { data: adminData } = await insforge.database
         .from('profiles')
         .select('id')
@@ -105,7 +122,7 @@ export async function sendMessage(content: string) {
     const receiverId = adminData && adminData.length > 0 ? adminData[0].id : '00000000-0000-0000-0000-000000000000';
 
     await insforge.database.from('messages').insert({
-        sender_id: DUMMY_USER_ID,
+        sender_id: userId,
         receiver_id: receiverId,
         content,
         read: false
@@ -113,10 +130,13 @@ export async function sendMessage(content: string) {
 }
 
 export async function getDocuments() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('document_shares')
         .select('*, documents(*), projects(title)')
-        .eq('user_id', DUMMY_USER_ID)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -141,16 +161,22 @@ export async function getDocuments() {
     });
 }
 
-export async function updatePassword(_newPassword: string) {
-    console.log("Password update requested for dummy user, ignoring.");
-    return;
+export async function updatePassword(newPassword: string) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
+    const { error } = await (insforge.auth as any).updateUser({ password: newPassword });
+    if (error) throw error;
 }
 
 export async function getSharedPhotos() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
     const { data, error } = await insforge.database
         .from('document_shares')
         .select('*, documents(*)')
-        .eq('user_id', DUMMY_USER_ID);
+        .eq('user_id', userId);
 
     if (error) throw error;
 
@@ -171,10 +197,13 @@ export async function getSharedPhotos() {
 }
 
 export async function getProfile() {
+    const userId = await getUserId();
+    if (!userId) return null;
+
     const { data, error } = await insforge.database
         .from('profiles')
         .select()
-        .eq('id', DUMMY_USER_ID)
+        .eq('id', userId)
         .maybeSingle(); // maybeSingle instead of single so it returns null if missing
 
     if (error) throw error;
@@ -183,6 +212,9 @@ export async function getProfile() {
 }
 
 export async function updateProfile(updateData: { fullName?: string | null, phone?: string | null, address?: string | null }) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
     await insforge.database
         .from('profiles')
         .update({
@@ -190,16 +222,19 @@ export async function updateProfile(updateData: { fullName?: string | null, phon
             phone: updateData.phone,
             address: updateData.address
         })
-        .eq('id', DUMMY_USER_ID);
+        .eq('id', userId);
 }
 
 export async function uploadAvatar(formData: FormData) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
     const file = formData.get('file') as File;
     if (!file) throw new Error('No file provided');
 
     const { data, error } = await insforge.storage
         .from('avatars')
-        .upload(`${DUMMY_USER_ID}/${file.name}`, file);
+        .upload(`${userId}/${file.name}`, file);
 
     if (error) throw error;
     if (!data) throw new Error('Upload failed');
@@ -207,7 +242,7 @@ export async function uploadAvatar(formData: FormData) {
     await insforge.database
         .from('profiles')
         .update({ avatar_url: data.url })
-        .eq('id', DUMMY_USER_ID);
+        .eq('id', userId);
 
     return data.url;
 }
@@ -235,7 +270,7 @@ export async function getAdminCustomers() {
 
     return (data || []).map((p: any) => ({
         id: p.id,
-        email: 'customer@example.com',
+        email: p.email || 'customer@example.com',
         createdAt: p.created_at || '',
         fullName: p.full_name,
         phone: p.phone,
@@ -251,6 +286,8 @@ export async function createAdminCustomer(param: {
     phone?: string;
     role?: string;
 }) {
+    // Note: Creating an auth user typically requires service_role admin API.
+    // We mock inserting a profile, but the auth identity won't be fully set.
     const userId = uuidv4();
     const { error } = await insforge.database
         .from('profiles')
@@ -279,8 +316,13 @@ export async function deleteCustomer(userId: string) {
         .eq('id', userId);
 }
 
-export async function resetCustomerPassword(_userId: string, _newPassword: string) {
-    console.log("Password reset requested for dummy user, ignoring.");
+export async function resetCustomerPassword(targetUserId: string, newPassword: string) {
+    const adminId = await getUserId();
+    if (!adminId) throw new Error('Not authenticated');
+
+    // To reset another user's password, InsForge requires the service_role key.
+    // For now we just return since updating `profiles.password` is legacy.
+    console.warn('resetCustomerPassword requires Admin API via service_role key.');
     return;
 }
 
@@ -312,6 +354,9 @@ export async function uploadAdminDocument(formData: FormData) {
     if (uploadError) throw uploadError;
     if (!blob) throw new Error('Upload failed');
 
+    const currentUserId = await getUserId();
+    if (!currentUserId) throw new Error('Not authenticated');
+
     const { data: docs, error: dbError } = await insforge.database
         .from('documents')
         .insert({
@@ -320,7 +365,7 @@ export async function uploadAdminDocument(formData: FormData) {
             storage_key: blob.key,
             mime_type: file.type,
             size: file.size,
-            uploaded_by: DUMMY_USER_ID
+            uploaded_by: currentUserId
         })
         .select();
 
@@ -344,12 +389,15 @@ export async function bookInspection(param: {
     preferred_date: string;
     description: string;
 }) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
     const profile = await getProfile();
 
     await insforge.database.from('inspections').insert({
-        user_id: DUMMY_USER_ID,
+        user_id: userId,
         name: profile?.fullName || 'Unnamed Customer',
-        email: DUMMY_USER_EMAIL,
+        email: profile?.email || 'customer@example.com',
         address: param.address,
         property_type: param.property_type,
         preferred_date: param.preferred_date,
@@ -361,9 +409,12 @@ export async function bookInspection(param: {
 }
 
 export async function getDashboardStats() {
-    const { data: p } = await insforge.database.from('projects').select('status').eq('user_id', DUMMY_USER_ID);
-    const { data: q } = await insforge.database.from('quotes').select('status').eq('user_id', DUMMY_USER_ID);
-    const { data: i } = await insforge.database.from('inspections').select('preferred_date').eq('user_id', DUMMY_USER_ID).order('preferred_date');
+    const userId = await getUserId();
+    if (!userId) return { activeProjects: 0, completedJobs: 0, pendingQuotes: 0, inspections: [] };
+
+    const { data: p } = await insforge.database.from('projects').select('status').eq('user_id', userId);
+    const { data: q } = await insforge.database.from('quotes').select('status').eq('user_id', userId);
+    const { data: i } = await insforge.database.from('inspections').select('preferred_date').eq('user_id', userId).order('preferred_date');
 
     const stats = {
         activeProjects: (p || []).filter((proj: any) => proj.status === 'active').length,
@@ -375,16 +426,75 @@ export async function getDashboardStats() {
 }
 
 export async function registerUser(email: string, password: string, name: string) {
-    const userId = uuidv4();
     try {
-        const { error } = await insforge.database.from('profiles').insert({
-            id: userId,
-            full_name: name,
-            role: 'customer'
+        const { data, error } = await insforge.auth.signUp({
+            email,
+            password,
         });
         if (error) return { error: error.message };
+
+        if (data?.user) {
+            await insforge.database.from('profiles').insert({
+                id: data.user.id,
+                full_name: name,
+                role: 'customer'
+            });
+        }
         return { error: null };
     } catch (error) {
         return { error: error instanceof Error ? error.message : 'An unknown error occurred' };
     }
+}
+
+export async function getResources() {
+    const userId = await getUserId();
+    if (!userId) return [];
+
+    const { data: resources } = await insforge.database
+        .from('resources')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    return resources || [];
+}
+
+export async function createResource(formData: FormData) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
+    const profile = await getProfile();
+    if (profile?.role !== 'admin') throw new Error('Not authorized');
+
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const driveLink = formData.get('driveLink') as string;
+
+    if (!title) throw new Error('Title is required');
+
+    const { error } = await insforge.database
+        .from('resources')
+        .insert({
+            title,
+            description,
+            drive_link: driveLink
+        });
+
+    if (error) throw error;
+    return { success: true };
+}
+
+export async function deleteResource(id: string) {
+    const userId = await getUserId();
+    if (!userId) throw new Error('Not authenticated');
+
+    const profile = await getProfile();
+    if (profile?.role !== 'admin') throw new Error('Not authorized');
+
+    const { error } = await insforge.database
+        .from('resources')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return { success: true };
 }

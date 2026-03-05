@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import {
     LayoutDashboard, CalendarCheck, FileText, HardHat,
-    Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck, Users
+    Receipt, MessageCircle, Settings, LogOut, Menu, ShieldCheck, Users, FolderOpen
 } from 'lucide-react';
 import { useState } from 'react';
+import { logoutUser } from '@/lib/auth-actions';
 
 const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -15,19 +16,17 @@ const navItems = [
     { href: '/dashboard/quotes', icon: FileText, label: 'Quotes' },
     { href: '/dashboard/projects', icon: HardHat, label: 'Projects' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
+    { href: '/dashboard/resources', icon: FolderOpen, label: 'Resources' },
     { href: '/dashboard/invoices', icon: Receipt, label: 'Invoices' },
-    { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
+    { href: 'https://wa.me/17147704756', icon: MessageCircle, label: 'WhatsApp', external: true },
 ];
 
-export function CustomerSidebar() {
+export function CustomerSidebar({ user }: { user: { email: string, role: string, name: string | null } }) {
     const pathname = usePathname();
-    const router = useRouter();
-    const user = { email: 'customer@example.com', role: 'admin', name: 'Dummy User' };
     const [mobileOpen, setMobileOpen] = useState(false);
 
-
     const handleSignOut = async () => {
-        router.push('/');
+        await logoutUser();
     };
 
     const initials = user?.name
@@ -117,16 +116,30 @@ export function CustomerSidebar() {
 
             <nav className="sidebar-nav">
                 <div className="nav-label">Navigation</div>
-                {navItems.map(({ href, icon: Icon, label }) => (
-                    <Link
-                        key={href}
-                        href={href}
-                        className={`nav-link ${pathname === href ? 'active' : ''}`}
-                        onClick={() => setMobileOpen(false)}
-                    >
-                        <Icon size={18} />
-                        {label}
-                    </Link>
+                {navItems.map(({ href, icon: Icon, label, external }) => (
+                    external ? (
+                        <a
+                            key={href}
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="nav-link"
+                            onClick={() => setMobileOpen(false)}
+                        >
+                            <Icon size={18} />
+                            {label}
+                        </a>
+                    ) : (
+                        <Link
+                            key={href}
+                            href={href}
+                            className={`nav-link ${pathname === href ? 'active' : ''}`}
+                            onClick={() => setMobileOpen(false)}
+                        >
+                            <Icon size={18} />
+                            {label}
+                        </Link>
+                    )
                 ))}
                 <Link href="/dashboard/settings" className={`nav-link ${pathname === '/dashboard/settings' ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>
                     <Settings size={18} />
@@ -142,6 +155,10 @@ export function CustomerSidebar() {
                         <Link href="/dashboard/admin/documents" className={`nav-link ${pathname === '/dashboard/admin/documents' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
                             <ShieldCheck size={18} />
                             Doc Transfer
+                        </Link>
+                        <Link href="/dashboard/admin/resources" className={`nav-link ${pathname === '/dashboard/admin/resources' ? 'active' : ''}`} onClick={() => setMobileOpen(false)} style={{ color: 'var(--orange-400)' }}>
+                            <FolderOpen size={18} />
+                            Add Resources
                         </Link>
                     </>
                 )}
